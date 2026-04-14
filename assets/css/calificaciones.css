@@ -1,0 +1,18 @@
+/* assets/css/calificaciones.css */
+.grade-input {
+    width: 60px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.grade-pass { color: #16a34a; }
+.grade-fail { color: #dc2626; font-weight: 800; }
+
+.average-badge {
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #d0dbe7;
+}

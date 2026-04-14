@@ -1,0 +1,4 @@
+/* assets/css/grupos.css */
+.group-card { border-top: 3px solid #7c3aed; transition: transform 0.2s; }
+.group-card:hover { transform: translateY(-4px); }
+.group-count { font-size: 1.5rem; font-weight: 700; color: #7c3aed; }

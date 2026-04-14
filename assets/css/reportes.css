@@ -1,0 +1,10 @@
+/* assets/css/reportes.css */
+.report-item {
+    padding: 1rem;
+    border: 1px solid #d0dbe7;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: background 0.2s;
+}
+.report-item:hover { background: #f8fafc; }
+.report-icon { font-size: 2rem; color: #197fe6; opacity: 0.5; }

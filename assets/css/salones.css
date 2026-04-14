@@ -1,0 +1,4 @@
+/* assets/css/salones.css */
+.room-capacity { font-size: 0.8rem; font-weight: 600; color: #64748b; }
+.room-available { color: #16a34a; }
+.room-busy { color: #dc2626; }

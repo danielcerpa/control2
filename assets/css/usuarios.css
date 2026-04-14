@@ -1,0 +1,5 @@
+/* assets/css/usuarios.php */
+.user-role-admin { border-left: 4px solid #dc2626; }
+.user-role-director { border-left: 4px solid #197fe6; }
+.user-role-profesor { border-left: 4px solid #16a34a; }
+.user-role-alumno { border-left: 4px solid #64748b; }

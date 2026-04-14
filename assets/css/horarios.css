@@ -1,0 +1,41 @@
+/* assets/css/horarios.css */
+.schedule-grid {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+    gap: 1px;
+    background: #d0dbe7;
+    border: 1px solid #d0dbe7;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.schedule-header {
+    background: #f8fafc;
+    padding: 12px;
+    font-weight: 700;
+    text-align: center;
+    color: #4e7397;
+    font-size: 0.8rem;
+}
+
+.schedule-cell {
+    background: #fff;
+    min-height: 60px;
+    padding: 8px;
+    position: relative;
+}
+
+.event-block {
+    background: #eff6ff;
+    border-left: 3px solid #197fe6;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    transition: all 0.2s;
+}
+
+.event-block:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
