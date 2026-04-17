@@ -26,17 +26,17 @@ De acuerdo al diseño de la base de datos, cada módulo opera con la siguiente i
 
 ### Alumnos
 
-- **Se solicita al crear:** Matrícula (única), Nombre(s), Apellido paterno, Apellido materno, CURP (única), Género, Domicilio, Escuela de procedencia, Fotografía (ruta), Nombre del tutor familiar, Teléfono del tutor y Comentarios adicionales. *(Se autogenera o asocia un Usuario en el sistema).*
+- **Se solicita al crear:** Matrícula (única), Nombre(s), Apellido paterno, Apellido materno, CURP (única), Género, Domicilio, Escuela de procedencia, Fotografía (ruta), Nombre del tutor familiar, Teléfono del tutor y Comentarios adicionales. _(Se autogenera o asocia un Usuario en el sistema)._
 - **Se muestra en tabla:** Matrícula, Nombre completo, CURP, Teléfono del tutor, Estado (Activo/Inactivo).
 
 ### Profesores (Docentes)
 
-- **Se solicita al crear:** Número de empleado (único), Nombre completo, CURP (única), Teléfono personal, Domicilio, Escuela de procedencia y Grado académico. *(Se autogenera o asocia un Usuario en el sistema).*
+- **Se solicita al crear:** Número de empleado (único), Nombre completo, CURP (única), Teléfono personal, Domicilio, Escuela de procedencia y Grado académico. _(Se autogenera o asocia un Usuario en el sistema)._
 - **Se muestra en tabla:** Número de empleado, Nombre completo, Teléfono, Grado académico y Estado.
 
 ### Salones (Aulas)
 
-- **Se solicita al crear:** Nombre o identificador del salón (ej. *Aula 101*, *Laboratorio B*) y Capacidad máxima de alumnos que soporta físicamente.
+- **Se solicita al crear:** Nombre o identificador del salón (ej. _Aula 101_, _Laboratorio B_) y Capacidad máxima de alumnos que soporta físicamente.
 - **Se muestra en tabla:** Nombre del Salón y Capacidad total.
 
 ### Materias (y Horario Integrado)
@@ -56,7 +56,7 @@ De acuerdo al diseño de la base de datos, cada módulo opera con la siguiente i
 
 ### Calificaciones
 
-- **Se solicita al crear:** La Inscripción que se va a evaluar (El historial del Alumno cursando esa Oferta de Horario en específico), una Etiqueta o nombre corto del periodo decidido por el profesor (Ej: *"Tesis"*, *"Parcial 1"*), y el Puntaje numérico final de ese periodo.
+- **Se solicita al crear:** La Inscripción que se va a evaluar (El historial del Alumno cursando esa Oferta de Horario en específico), una Etiqueta o nombre corto del periodo decidido por el profesor (Ej: _"Tesis"_, _"Parcial 1"_), y el Puntaje numérico final de ese periodo.
 - **Se muestra en tabla:** Etiqueta del periodo, Puntaje parcial/final de la etapa y Fecha del registro.
 
 ## Arquitectura y Tecnologías
@@ -113,5 +113,4 @@ Sigue estos pasos para echar a andar el proyecto en un entorno local (XAMPP):
    - Baja hasta el final y da clic al botón de **Importar** / **Continuar**.
    - Si todo salió bien, a tu lado izquierdo aparecerá la base de datos `control_escolar` generada ya con sus tablas y datos base bien estructurados dependiendo de sus llaves foráneas.
 4. **Validar conexión**: Asegúrate de que los credenciales de la variable PDO en `config/db.php` sean las por defecto para tu ambiente (casi siempre usuario `root` con contraseña en blanco para localhost).
-5. **Comprobar acceso**: Entra desde tu navegador a `http://localhost/ControlEscolarPHP`.#   c o n t r o l 2  
- 
+5. **Comprobar acceso**: Entra desde tu navegador a `http://localhost/ControlEscolar2`.

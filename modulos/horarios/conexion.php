@@ -24,7 +24,7 @@ class Horario
                     s.nombre AS salon,
                     CONCAT(g.grado, g.seccion) AS grupo
              FROM materias m
-             JOIN horarios_materia hm ON m.id_materia = hm.id_materia
+             JOIN materia_horarios hm ON m.id_materia = hm.id_materia
              LEFT JOIN profesores p ON m.id_profesor = p.id_profesor
              LEFT JOIN salones s ON m.id_salon = s.id_salon
              LEFT JOIN grupos g ON m.id_grupo = g.id_grupo

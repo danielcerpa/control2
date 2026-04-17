@@ -134,9 +134,23 @@ class AlumnosController extends Controller
                 }
             }
 
-            $this->alumnoModel->create($datos);
-            header('Location: ' . BASE_URL . 'alumnos');
-            exit;
+            try {
+                $this->alumnoModel->create($datos);
+                redirect(BASE_URL . 'alumnos', 'Alumno registrado exitosamente');
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    // Prevenir crash, volver al formulario con error sutil
+                    $modulo_activo = 'alumnos';
+                    $grupos = []; 
+                    return $this->view('alumnos/create', [
+                        'modulo_activo' => $modulo_activo, 
+                        'datos' => $datos, 
+                        'grupos' => $grupos, 
+                        'errors' => ['matricula' => 'La matrícula o CURP ya está en uso por otro alumno']
+                    ]);
+                }
+                throw $e; // Si es otro error, dejar que el sistema lo maneje
+            }
         }
         $modulo_activo = 'alumnos';
         $grupos = []; // TODO: Cargar grupos reales del modelo cuando exista
@@ -189,9 +203,21 @@ class AlumnosController extends Controller
                 }
             }
 
-            $this->alumnoModel->update($id, $datos);
-            header('Location: ' . BASE_URL . 'alumnos');
-            exit;
+            try {
+                $this->alumnoModel->update($id, $datos);
+                redirect(BASE_URL . 'alumnos', 'Alumno actualizado correctamente');
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    $modulo_activo = 'alumnos';
+                    return $this->view('alumnos/edit', [
+                        'modulo_activo' => $modulo_activo, 
+                        'datos' => $datos, 
+                        'grupos' => [], 
+                        'errors' => ['matricula' => 'No se pudo guardar: La matrícula o CURP ya existe en otro registro']
+                    ]);
+                }
+                throw $e;
+            }
         }
         if ($alumno) {
             $alumno['direccion'] = $alumno['domicilio'];

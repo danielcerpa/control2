@@ -129,7 +129,7 @@ class Materia
     // --- HORARIOS MULTIPLES ---
     public function getHorarios($id_materia)
     {
-        $st = $this->db->prepare("SELECT dia, hora_inicio, hora_fin FROM horarios_materia WHERE id_materia = ? ORDER BY FIELD(dia, 'LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'), hora_inicio");
+        $st = $this->db->prepare("SELECT dia, hora_inicio, hora_fin FROM materia_horarios WHERE id_materia = ? ORDER BY FIELD(dia, 'LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'), hora_inicio");
         $st->execute([$id_materia]);
         return $st->fetchAll();
     }
@@ -137,12 +137,12 @@ class Materia
     public function syncHorarios($id_materia, $dias, $horas_i, $horas_f)
     {
         // 1. Borrar todos los horarios actuales de esta materia
-        $st = $this->db->prepare("DELETE FROM horarios_materia WHERE id_materia = ?");
+        $st = $this->db->prepare("DELETE FROM materia_horarios WHERE id_materia = ?");
         $st->execute([$id_materia]);
 
         // 2. Insertar los nuevos (si vienen)
         if (!empty($dias) && is_array($dias)) {
-            $stInsert = $this->db->prepare("INSERT INTO horarios_materia (id_materia, dia, hora_inicio, hora_fin) VALUES (?, ?, ?, ?)");
+            $stInsert = $this->db->prepare("INSERT INTO materia_horarios (id_materia, dia, hora_inicio, hora_fin) VALUES (?, ?, ?, ?)");
             foreach ($dias as $index => $dia) {
                 if (!empty($dia) && !empty($horas_i[$index]) && !empty($horas_f[$index])) {
                     $stInsert->execute([$id_materia, strtoupper(trim($dia)), $horas_i[$index], $horas_f[$index]]);

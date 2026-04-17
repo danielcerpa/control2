@@ -118,9 +118,18 @@ class DocentesController extends Controller
                 $id_usuario = $usuarioModel->create($datos_usu, $contrasena);
             }
 
-            $this->docenteModel->create($datos_guardar, $id_usuario);
-            header('Location: ' . BASE_URL . 'docentes');
-            exit;
+            try {
+                $this->docenteModel->create($datos_guardar, $id_usuario);
+                redirect(BASE_URL . 'docentes', 'Docente registrado exitosamente');
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    return $this->view('docentes/create', [
+                        'datos' => $datos, 
+                        'errors' => ['num_empleado' => 'El número de empleado o CURP ya está registrado']
+                    ]);
+                }
+                throw $e;
+            }
         }
         $this->view('docentes/create', ['datos' => $datos, 'errors' => []]);
     }
@@ -212,9 +221,18 @@ class DocentesController extends Controller
                 }
             }
 
-            $this->docenteModel->update($id, $datos_guardar);
-            header('Location: ' . BASE_URL . 'docentes');
-            exit;
+            try {
+                $this->docenteModel->update($id, $datos_guardar);
+                redirect(BASE_URL . 'docentes', 'Datos del docente actualizados');
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    return $this->view('docentes/edit', [
+                        'datos' => $docente, 
+                        'errors' => ['num_empleado' => 'Error: El número de empleado o CURP pertenece a otro docente']
+                    ]);
+                }
+                throw $e;
+            }
         }
         $this->view('docentes/edit', ['datos' => $docente, 'errors' => []]);
     }

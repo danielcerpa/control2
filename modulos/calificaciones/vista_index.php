@@ -22,7 +22,7 @@
             <select name="grupo" id="sel-grupo" class="form-control" onchange="this.form.submit()" style="border-radius:8px;">
                 <option value="0">Seleccionar grupo...</option>
                 <?php foreach ($grupos as $g): ?>
-                    <option value="<?php echo $g['id_calificacion']; ?>" <?php if ($filtro_grupo == $g['id_calificacion']) echo 'selected'; ?>><?php echo e($g['nombre']); ?></option>
+                    <option value="<?php echo $g['id_grupo']; ?>" <?php if ($filtro_grupo == $g['id_grupo']) echo 'selected'; ?>><?php echo e($g['nombre']); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -31,7 +31,7 @@
             <select name="materia" id="sel-materia" class="form-control" onchange="this.form.submit()" style="border-radius:8px;">
                 <option value="0"><?php echo $filtro_grupo ? 'Seleccionar materia...' : 'Primero selecciona un grupo'; ?></option>
                 <?php foreach ($materias as $m): ?>
-                    <option value="<?php echo $m['id_calificacion']; ?>" <?php if ($filtro_materia == $m['id_calificacion']) echo 'selected'; ?>><?php echo e($m['nombre']); ?></option>
+                    <option value="<?php echo $m['id_materia']; ?>" <?php if ($filtro_materia == $m['id_materia']) echo 'selected'; ?>><?php echo e($m['nombre']); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
