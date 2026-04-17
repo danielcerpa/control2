@@ -51,8 +51,8 @@
             <select name="grupo" class="form-control">
                 <option value="0">Todos los grupos</option>
                 <?php foreach ($grupos as $g): ?>
-                    <option value="<?php echo $g['id_alumno']; ?>" <?php if ($filtros['grupo'] == $g['id_alumno']) echo 'selected'; ?>>
-                        <?php echo e($g['nombre']); ?>
+                    <option value="<?php echo $g['id_grupo']; ?>" <?php if ($filtros['grupo'] == $g['id_grupo']) echo 'selected'; ?>>
+                        <?php echo e($g['nombre'] ?? ($g['grado'] . ' ' . $g['seccion'])); ?>
                     </option>
                 <?php endforeach; ?>
             </select>

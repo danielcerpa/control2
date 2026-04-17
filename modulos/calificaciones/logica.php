@@ -28,30 +28,35 @@ class CalificacionesController extends Controller
 
         // Cargar materias filtradas por grupo (si hay grupo seleccionado)
         $materias = $filtro_grupo
-            ? $this->materiaModel->getAll()
+            ? $this->materiaModel->getByGrupo($filtro_grupo)
             : [];
 
         // Cargar alumnos con calificaciones si hay grupo y materia
         $alumnos = [];
         if ($filtro_grupo && $filtro_materia) {
-            $calificaciones = $this->calificacionModel->getAll();
-            // Filtrar por grupo y materia
-            $alumnos = array_filter($calificaciones, function ($c) use ($filtro_grupo, $filtro_materia) {
-                return true; // La vista ya tiene toda la data en $calificaciones
-            });
-            $alumnos = $calificaciones;
+            $alumnos = $this->calificacionModel->getByFilter($filtro_grupo, $filtro_materia);
         }
 
         // Guardar calificaciones en masa (POST)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['calificaciones'])) {
-            foreach ($_POST['calificaciones'] as $id_cal => $puntaje) {
+            foreach ($_POST['calificaciones'] as $id_insc => $puntaje) {
                 if ($puntaje !== '') {
-                    $this->calificacionModel->update((int)$id_cal, [
-                        'id_inscripcion'   => 0, // No se cambia
-                        'etiqueta_periodo' => '',
-                        'puntaje'          => (float) $puntaje,
-                        'estado'           => 'ACTIVO',
-                    ]);
+                    $existente = $this->calificacionModel->getByInscripcion((int)$id_insc);
+                    if ($existente) {
+                        $this->calificacionModel->update((int)$existente[0]['id_calificacion'], [
+                            'id_inscripcion'   => (int)$id_insc,
+                            'etiqueta_periodo' => '',
+                            'puntaje'          => (float) $puntaje,
+                            'estado'           => 'ACTIVO',
+                        ]);
+                    } else {
+                        $this->calificacionModel->create([
+                            'id_inscripcion'   => (int)$id_insc,
+                            'etiqueta_periodo' => '',
+                            'puntaje'          => (float) $puntaje,
+                            'estado'           => 'ACTIVO',
+                        ]);
+                    }
                 }
             }
             header('Location: ' . BASE_URL . 'calificaciones?grupo=' . $filtro_grupo . '&materia=' . $filtro_materia);

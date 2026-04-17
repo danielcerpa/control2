@@ -41,6 +41,12 @@ class UsuariosController extends Controller
                 'nombre_usuario' => trim($_POST['nombre_usuario']),
                 'estado' => isset($_POST['estado']) ? 1 : 0
             ];
+            if (empty($_POST['contrasena'])) {
+                redirect(BASE_URL . 'usuarios/create', 'Debes proporcionar una contraseña.', 'danger');
+            }
+            if ($_POST['contrasena'] !== ($_POST['contrasena2'] ?? '')) {
+                redirect(BASE_URL . 'usuarios/create', 'Las contraseñas no coinciden.', 'danger');
+            }
             $contrasena = password_hash($_POST['contrasena'], PASSWORD_DEFAULT);
             $this->usuarioModel->create($datos, $contrasena);
             header('Location: ' . BASE_URL . 'usuarios');
@@ -65,6 +71,9 @@ class UsuariosController extends Controller
                 'nombre_usuario' => trim($_POST['nombre_usuario']),
                 'estado' => isset($_POST['estado']) ? 1 : 0
             ];
+            if (!empty($_POST['contrasena']) && $_POST['contrasena'] !== ($_POST['contrasena2'] ?? '')) {
+                redirect(BASE_URL . 'usuarios/edit/' . $id, 'Las contraseñas no coinciden.', 'danger');
+            }
             $contrasena = !empty($_POST['contrasena']) ? password_hash($_POST['contrasena'], PASSWORD_DEFAULT) : null;
             $this->usuarioModel->update($id, $datos, $contrasena);
             header('Location: ' . BASE_URL . 'usuarios');

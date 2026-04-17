@@ -142,7 +142,7 @@ CREATE TABLE profesor_materia (
 );
 
 -- Nueva tabla para horarios multiples (desacoplada)
-CREATE TABLE horarios_materia (
+CREATE TABLE materia_horarios (
     id_horario BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_materia BIGINT NOT NULL,
     dia ENUM(
@@ -155,7 +155,7 @@ CREATE TABLE horarios_materia (
     ),
     hora_inicio TIME,
     hora_fin TIME,
-    FOREIGN KEY (id_materia) REFERENCES materias(id_materia) ON DELETE CASCADE
+    FOREIGN KEY (id_materia) REFERENCES materias (id_materia) ON DELETE CASCADE
 );
 
 -- el alumno se inscribe a una materia especifica
@@ -188,3 +188,319 @@ INSERT INTO
         estado
     )
 VALUES ('admin', '123', 1);
+
+USE control_escolar;
+
+-- 1. Usuarios adicionales (Alumnos y Profesores)
+INSERT INTO
+    usuarios (
+        nombre_usuario,
+        contrasena,
+        estado
+    )
+VALUES ('profe_juan', '123', 1),
+    ('profe_maria', '123', 1),
+    ('alumno_pedro', '123', 1),
+    ('alumno_ana', '123', 1),
+    ('alumno_luis', '123', 1);
+
+-- 2. Modulos
+INSERT INTO
+    modulos (
+        nombre,
+        descripcion,
+        area,
+        estado
+    )
+VALUES (
+        'Usuarios',
+        'Gestión de usuarios del sistema',
+        'Admin',
+        1
+    ),
+    (
+        'Alumnos',
+        'Control de expedientes de alumnos',
+        'Escolar',
+        1
+    ),
+    (
+        'Materias',
+        'Catálogo y asignación de materias',
+        'Académica',
+        1
+    ),
+    (
+        'Calificaciones',
+        'Registro de notas y evaluaciones',
+        'Académica',
+        1
+    );
+
+-- 3. Ciclos Escolares
+INSERT INTO
+    ciclos_escolares (
+        nombre,
+        fecha_inicio,
+        fecha_fin,
+        estado
+    )
+VALUES (
+        '2023-2024 Anual',
+        '2023-08-01',
+        '2024-06-30',
+        'Cerrado'
+    ),
+    (
+        '2024-2025 Anual',
+        '2024-08-01',
+        '2025-06-30',
+        'Activo'
+    );
+
+-- 4. Perfiles (Niveles de acceso)
+INSERT INTO
+    perfiles (
+        apodo,
+        descripcion,
+        clave_agregar,
+        clave_eliminar,
+        clave_editar,
+        clave_exportar
+    )
+VALUES (
+        'SuperAdmin',
+        'Control total del sistema',
+        1,
+        1,
+        1,
+        1
+    ),
+    (
+        'Administrativo',
+        'Gestión escolar básica',
+        1,
+        0,
+        1,
+        1
+    ),
+    (
+        'Profesor',
+        'Solo lectura y carga de notas',
+        0,
+        0,
+        0,
+        0
+    );
+
+-- 5. Permisos (Asignar perfiles a usuarios en módulos)
+INSERT INTO
+    permisos (
+        id_usuario,
+        id_modulo,
+        id_perfil
+    )
+VALUES (1, 1, 1), -- Admin tiene SuperAdmin en Usuarios
+    (1, 2, 1), -- Admin tiene SuperAdmin en Alumnos
+    (2, 3, 3), -- Profe Juan (id 2) tiene acceso a Materias
+    (3, 4, 3);
+-- Profe Maria (id 3) tiene acceso a Calificaciones
+
+-- 6. Profesores
+INSERT INTO
+    profesores (
+        id_usuario,
+        numero_empleado,
+        nombre_completo,
+        curp,
+        telefono,
+        grado_academico
+    )
+VALUES (
+        2,
+        'EMP001',
+        'Juan Pérez Gómez',
+        'PEGJ800101HDFRRN01',
+        '555-0101',
+        'Maestría en Ciencias'
+    ),
+    (
+        3,
+        'EMP002',
+        'Maria Rodríguez Luis',
+        'ROLM850202MDFRRN02',
+        '555-0202',
+        'Licenciatura en Educación'
+    );
+
+-- 7. Alumnos
+INSERT INTO
+    alumnos (
+        id_usuario,
+        matricula,
+        nombre,
+        apellido_paterno,
+        apellido_materno,
+        curp,
+        genero,
+        fecha_nac,
+        nombre_tutor
+    )
+VALUES (
+        4,
+        'MAT2024001',
+        'Pedro',
+        'Infante',
+        'Cruz',
+        'INCP050505HDFRRN01',
+        'H',
+        '2005-05-05',
+        'Josefa Cruz'
+    ),
+    (
+        5,
+        'MAT2024002',
+        'Ana',
+        'Gabriel',
+        'Lozano',
+        'GALA060606MDFRRN02',
+        'M',
+        '2006-06-06',
+        'Roberto Lozano'
+    ),
+    (
+        6,
+        'MAT2024003',
+        'Luis',
+        'Miguel',
+        'Gallego',
+        'MAGL070707HDFRRN03',
+        'H',
+        '2007-07-07',
+        'Marcela Basteri'
+    );
+
+-- 8. Salones
+INSERT INTO
+    salones (nombre, capacidad)
+VALUES ('Aula 101', 30),
+    ('Aula 102', 25),
+    ('Laboratorio A', 20);
+
+-- 9. Grupos
+INSERT INTO
+    grupos (
+        grado,
+        seccion,
+        ciclo_escolar,
+        turno
+    )
+VALUES (
+        '1',
+        'A',
+        '2024-2025',
+        'MATUTINO'
+    ),
+    (
+        '2',
+        'B',
+        '2024-2025',
+        'VESPERTINO'
+    );
+
+-- 10. Alumno_Grupo (Asignar alumnos a sus grupos)
+INSERT INTO
+    alumno_grupo (id_alumno, id_grupo)
+VALUES (1, 1),
+    (2, 1),
+    (3, 2);
+
+-- 11. Materias
+INSERT INTO
+    materias (
+        nombre,
+        cupo_maximo,
+        vigencia_inicio,
+        vigencia_fin,
+        id_profesor,
+        id_salon,
+        id_grupo,
+        ciclo_escolar
+    )
+VALUES (
+        'Matemáticas I',
+        30,
+        '2024-08-01',
+        '2025-06-30',
+        1,
+        1,
+        1,
+        '2024-2025'
+    ),
+    (
+        'Historia Universal',
+        25,
+        '2024-08-01',
+        '2025-06-30',
+        2,
+        2,
+        1,
+        '2024-2025'
+    );
+
+-- 12. Materia Horarios
+INSERT INTO
+    materia_horarios (
+        id_materia,
+        dia,
+        hora_inicio,
+        hora_fin
+    )
+VALUES (
+        1,
+        'LUNES',
+        '07:00:00',
+        '09:00:00'
+    ),
+    (
+        1,
+        'MIERCOLES',
+        '07:00:00',
+        '09:00:00'
+    ),
+    (
+        2,
+        'MARTES',
+        '10:00:00',
+        '12:00:00'
+    ),
+    (
+        2,
+        'JUEVES',
+        '10:00:00',
+        '12:00:00'
+    );
+
+-- 13. Inscripciones (Alumnos inscritos a materias)
+INSERT INTO
+    inscripciones (id_alumno, id_materia, estado)
+VALUES (1, 1, 1),
+    (2, 1, 1),
+    (1, 2, 1);
+
+-- 14. Calificaciones
+INSERT INTO
+    calificaciones (
+        id_inscripcion,
+        etiqueta_periodo,
+        puntaje,
+        estado
+    )
+VALUES (1, 'Parcial 1', 9.5, 'ACTIVO'),
+    (2, 'Parcial 1', 8.0, 'ACTIVO'),
+    (
+        3,
+        'Parcial 1',
+        10.0,
+        'ACTIVO'
+    );

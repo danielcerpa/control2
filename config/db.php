@@ -2,7 +2,7 @@
 define('DB_HOST', 'localhost:3307');
 define('DB_NAME', 'control_escolar');
 define('DB_USER', 'root');
-define('DB_PASS', 'C3cyt3g21');
+define('DB_PASS', '');
 define('DB_CHARSET', 'utf8');
 
 function db_connect()

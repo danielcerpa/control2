@@ -1,6 +1,6 @@
 <?php
 
-define('BASE_URL', '/ControlEscolarPHP/');
+define('BASE_URL', '/ControlEscolar2/');
 
 date_default_timezone_set('America/Mexico_City');
 

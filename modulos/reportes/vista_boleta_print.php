@@ -145,8 +145,8 @@
                 <strong>CURP:</strong> <?php echo e($alumno['curp']); ?>
             </div>
             <div style="text-align: right;">
-                <strong>GRUPO:</strong> <?php echo e($grupo ? $grupo['nombre'] : 'S/G'); ?><br>
-                <strong>GRADO:</strong> <?php echo e($alumno['grado'] ?: '—'); ?>°<br>
+                <strong>GRUPO:</strong> <?php echo e($grupo ? ($grupo['grado'] . $grupo['seccion']) : 'S/G'); ?><br>
+                <strong>GRADO:</strong> <?php echo e($grupo ? $grupo['grado'] : '—'); ?>°<br>
                 <strong>FECHA DE EMISIÓN:</strong> <?php echo date('d/m/Y'); ?>
             </div>
         </div>
