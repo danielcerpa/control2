@@ -80,7 +80,7 @@
                                     </td>
                                     <td class="align-middle">
                                         <input type="number"
-                                            name="calificaciones[<?php echo $al['id_calificacion']; ?>]"
+                                            name="calificaciones[<?php echo $al['id_inscripcion']; ?>]"
                                             class="form-control cal-input"
                                             value="<?php echo ($al['puntaje'] !== null ? number_format(floatval($al['puntaje']), 1) : ''); ?>"
                                             min="0" max="10" step="0.1"

@@ -22,6 +22,14 @@ class Materia
         return $formatted;
     }
 
+    public function getByGrupo($id_grupo)
+    {
+        $st = $this->db->prepare("SELECT * FROM materias WHERE id_grupo = ? ORDER BY nombre");
+        $st->execute([$id_grupo]);
+        $rows = $st->fetchAll();
+        return array_map([$this, '_defaults'], $rows);
+    }
+
     public function getById($id)
     {
         $st = $this->db->prepare("SELECT * FROM materias WHERE id_materia = ?");

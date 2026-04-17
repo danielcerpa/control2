@@ -15,16 +15,27 @@ class AlumnosController extends Controller
     {
         $filtros = [
             'q' => isset($_GET['q']) ? trim($_GET['q']) : '',
-            'estado' => isset($_GET['estado']) ? trim($_GET['estado']) : ''
+            'estado' => isset($_GET['estado']) ? trim($_GET['estado']) : '',
+            'grupo' => isset($_GET['grupo']) ? trim($_GET['grupo']) : ''
         ];
 
         $alumnos = $this->alumnoModel->getAll();
 
         if ($filtros['estado']) {
-            $estado_val = ($filtros['estado'] === 'Activo') ? 1 : 0;
-            $alumnos = array_filter($alumnos, function ($a) use ($estado_val) {
-                return (int)$a['estado'] === $estado_val;
-            });
+            if ($filtros['estado'] === 'Activo') $estado_val = 1;
+            elseif ($filtros['estado'] === 'Inactivo') $estado_val = 0;
+            else $estado_val = null; // Baja etc. map it to 0 as fallback or let it show empty if needed
+
+            if ($estado_val !== null) {
+                $alumnos = array_filter($alumnos, function ($a) use ($estado_val) {
+                    return (int)$a['estado'] === $estado_val;
+                });
+            } else {
+                // Si es "Baja" y no está explícito en la DB como boolean, asumo que estado = 0
+                $alumnos = array_filter($alumnos, function ($a) {
+                    return (int)$a['estado'] === 0;
+                });
+            }
         }
         if ($filtros['q']) {
             $q = strtolower($filtros['q']);
@@ -34,12 +45,33 @@ class AlumnosController extends Controller
                     strpos(strtolower($a['matricula']), $q) !== false;
             });
         }
+        
+        if (!empty($filtros['grupo'])) {
+            $grupo_id = (int)$filtros['grupo'];
+            $db = db_connect();
+            $st = $db->prepare("SELECT id_alumno FROM alumno_grupo WHERE id_grupo = ?");
+            $st->execute([$grupo_id]);
+            $valid_ids = $st->fetchAll(PDO::FETCH_COLUMN);
+            $alumnos = array_filter($alumnos, function ($a) use ($valid_ids) {
+                return in_array($a['id_alumno'], $valid_ids);
+            });
+        }
+
+        require_once 'modulos/grupos/conexion.php';
+        $grupoModel = new Grupo();
+        $grupos = $grupoModel->getAll();
+
+        // Mapear estado textual para vista_index
+        foreach ($alumnos as &$a) {
+            $a['estado'] = $a['estado'] ? 'Activo' : 'Inactivo'; // fallback básico
+        }
 
         $modulo_activo = 'alumnos';
         $this->view('alumnos/index', [
             'alumnos' => $alumnos,
             'modulo_activo' => $modulo_activo,
-            'filtros' => $filtros
+            'filtros' => $filtros,
+            'grupos' => $grupos
         ]);
     }
 
@@ -108,12 +140,40 @@ class AlumnosController extends Controller
                 'genero' => isset($_POST['sexo']) ? substr(trim($_POST['sexo']), 0, 1) : '',
                 'fecha_nac' => $_POST['fecha_nac'] ?? null,
                 'domicilio' => trim($_POST['direccion'] ?? ''),
+                'direccion' => trim($_POST['direccion'] ?? ''),
                 'escuela_procedencia' => trim($_POST['escuela_procedencia'] ?? ''),
                 'nombre_tutor' => trim($_POST['tutor_nombre'] ?? ''),
+                'tutor_nombre' => trim($_POST['tutor_nombre'] ?? ''),
                 'telefono_tutor' => trim($_POST['tutor_telefono'] ?? ''),
+                'tutor_telefono' => trim($_POST['tutor_telefono'] ?? ''),
                 'comentarios' => trim($_POST['comentarios_familia'] ?? ''),
-                'estado' => isset($_POST['estado']) && $_POST['estado'] !== 'Inactivo' && $_POST['estado'] !== 'Baja' ? 1 : 0
+                'comentarios_familia' => trim($_POST['comentarios_familia'] ?? ''),
+                'estado' => isset($_POST['estado']) && $_POST['estado'] !== 'Inactivo' && $_POST['estado'] !== 'Baja' ? 1 : 0,
+                'grupo_id' => trim($_POST['grupo_id'] ?? ''),
+                'login_id' => trim($_POST['login_id'] ?? '')
             ];
+
+            $password = $_POST['password'] ?? '';
+            $password2 = $_POST['password2'] ?? '';
+            $errors = [];
+
+            if (!empty($datos['login_id']) || !empty($password)) {
+                if ($password !== $password2) {
+                    $errors[] = 'Las contraseñas no coinciden.';
+                } elseif (empty($password)) {
+                    $errors[] = 'Debe proporcionar una contraseña para el usuario.';
+                }
+            }
+
+            if (!empty($errors)) {
+                $modulo_activo = 'alumnos';
+                return $this->view('alumnos/create', [
+                    'modulo_activo' => $modulo_activo, 
+                    'datos' => $datos, 
+                    'grupos' => [], 
+                    'errors' => $errors
+                ]);
+            }
 
             // Procesar foto base64
             $datos['ruta_foto'] = null;
@@ -134,8 +194,33 @@ class AlumnosController extends Controller
                 }
             }
 
+            // Crear el usuario de acceso si se proporcionó
+            $id_usuario = null;
+            if (!empty($datos['login_id']) && !empty($password)) {
+                require_once 'modulos/usuarios/conexion.php';
+                $usuarioModel = new Usuario();
+                
+                // Verificar que el usuario no exista
+                $db = db_connect();
+                $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ?");
+                $st->execute([$datos['login_id']]);
+                if ($st->fetch()) {
+                    $modulo_activo = 'alumnos';
+                    return $this->view('alumnos/create', [
+                        'modulo_activo' => $modulo_activo, 
+                        'datos' => $datos, 
+                        'grupos' => [], 
+                        'errors' => ['El nombre de usuario (login_id) ya está en uso.']
+                    ]);
+                }
+
+                $datos_usu = ['nombre_usuario' => $datos['login_id'], 'estado' => $datos['estado']];
+                $contrasena = password_hash($password, PASSWORD_DEFAULT);
+                $id_usuario = $usuarioModel->create($datos_usu, $contrasena);
+            }
+
             try {
-                $this->alumnoModel->create($datos);
+                $this->alumnoModel->create($datos, $id_usuario);
                 redirect(BASE_URL . 'alumnos', 'Alumno registrado exitosamente');
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
@@ -175,11 +260,16 @@ class AlumnosController extends Controller
                 'genero' => isset($_POST['sexo']) ? substr(trim($_POST['sexo']), 0, 1) : '',
                 'fecha_nac' => $_POST['fecha_nac'] ?? null,
                 'domicilio' => trim($_POST['direccion'] ?? ''),
+                'direccion' => trim($_POST['direccion'] ?? ''),
                 'escuela_procedencia' => trim($_POST['escuela_procedencia'] ?? ''),
                 'nombre_tutor' => trim($_POST['tutor_nombre'] ?? ''),
+                'tutor_nombre' => trim($_POST['tutor_nombre'] ?? ''),
                 'telefono_tutor' => trim($_POST['tutor_telefono'] ?? ''),
+                'tutor_telefono' => trim($_POST['tutor_telefono'] ?? ''),
                 'comentarios' => trim($_POST['comentarios_familia'] ?? ''),
-                'estado' => isset($_POST['estado']) && $_POST['estado'] !== 'Inactivo' && $_POST['estado'] !== 'Baja' ? 1 : 0
+                'comentarios_familia' => trim($_POST['comentarios_familia'] ?? ''),
+                'estado' => isset($_POST['estado']) && $_POST['estado'] !== 'Inactivo' && $_POST['estado'] !== 'Baja' ? 1 : 0,
+                'login_id' => trim($_POST['login_id'] ?? '')
             ];
 
             // Procesar foto base64 o si fue eliminada
@@ -198,6 +288,53 @@ class AlumnosController extends Controller
                         $filename = uniqid('alum_') . '.' . $type;
                         if (file_put_contents($dir . $filename, $data)) {
                             $datos['ruta_foto'] = BASE_URL . $dir . $filename;
+                        }
+                    }
+                }
+            }
+
+            // Actualizar o crear Usuario
+            require_once 'modulos/usuarios/conexion.php';
+            $usuarioModel = new Usuario();
+            
+            if (!empty($_POST['login_id'])) {
+                $password = $_POST['password'] ?? '';
+                $password2 = $_POST['password2'] ?? '';
+                
+                if (!empty($password) && $password !== $password2) {
+                    $modulo_activo = 'alumnos';
+                    return $this->view('alumnos/edit', [
+                        'modulo_activo' => $modulo_activo, 
+                        'datos' => $datos, 
+                        'grupos' => [], 
+                        'errors' => ['password' => 'Las contraseñas no coinciden.']
+                    ]);
+                }
+
+                // Verificar nombre de usuario (ignorando el actual)
+                $db = db_connect();
+                $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ? AND id_usuario != ?");
+                $st->execute([trim($_POST['login_id']), $alumno['id_usuario'] ?? 0]);
+                if ($st->fetch()) {
+                    $modulo_activo = 'alumnos';
+                    return $this->view('alumnos/edit', [
+                        'modulo_activo' => $modulo_activo, 
+                        'datos' => $datos, 
+                        'grupos' => [], 
+                        'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
+                    ]);
+                }
+
+                $datos_usu = ['nombre_usuario' => trim($_POST['login_id']), 'estado' => $datos['estado']];
+                $contrasena = !empty($password) ? password_hash($password, PASSWORD_DEFAULT) : null;
+                
+                if (!empty($alumno['id_usuario'])) {
+                    $usuarioModel->update($alumno['id_usuario'], $datos_usu, $contrasena);
+                } else {
+                    if ($contrasena) {
+                        $new_id = $usuarioModel->create($datos_usu, $contrasena);
+                        if ($new_id) {
+                            $db->prepare("UPDATE alumnos SET id_usuario = ? WHERE id_alumno = ?")->execute([$new_id, $id]);
                         }
                     }
                 }

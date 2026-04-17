@@ -28,7 +28,7 @@
                         <select name="id" class="form-control form-control-lg custom-select-lg" required style="border-radius:12px; font-size:16px;">
                             <option value="">Selecciona un grupo...</option>
                             <?php foreach ($grupos as $g): ?>
-                                <option value="<?php echo $g['id']; ?>"><?php echo e($g['nombre']); ?></option>
+                                <option value="<?php echo $g['id_grupo']; ?>"><?php echo e($g['nombre']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

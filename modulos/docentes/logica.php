@@ -21,18 +21,28 @@ class DocentesController extends Controller
         // y enviamos todos los docentes.
         $docentes = $this->docenteModel->getAll();
 
-        // (Opcional) Filtrado básico en PHP si el modelo no lo hace aún:
         if ($filtros['estado']) {
-            $docentes = array_filter($docentes, function ($d) use ($filtros) {
-                return $d['estado'] === $filtros['estado'];
-            });
+            if ($filtros['estado'] === 'Activo') $estado_val = 1;
+            elseif ($filtros['estado'] === 'Inactivo') $estado_val = 0;
+            else $estado_val = null;
+
+            if ($estado_val !== null) {
+                $docentes = array_filter($docentes, function ($d) use ($estado_val) {
+                    return (int)$d['estado'] === $estado_val;
+                });
+            }
         }
         if ($filtros['q']) {
             $q = strtolower($filtros['q']);
             $docentes = array_filter($docentes, function ($d) use ($q) {
                 return strpos(strtolower($d['nombre_completo']), $q) !== false ||
-                    strpos(strtolower($d['numero_empleado']), $q) !== false;
+                    strpos(strtolower($d['numero_empleado']), $q) !== false ||
+                    strpos(strtolower($d['curp']), $q) !== false;
             });
+        }
+
+        foreach ($docentes as &$d) {
+            $d['estado'] = $d['estado'] ? 'Activo' : 'Inactivo';
         }
 
         $this->view('docentes/index', [
@@ -78,6 +88,20 @@ class DocentesController extends Controller
             $apellido_p = trim($_POST['apellido_p'] ?? '');
             $apellido_m = trim($_POST['apellido_m'] ?? '');
 
+            $datos = [
+                'numero_empleado' => trim($_POST['num_empleado'] ?? ''),
+                'nombre_completo' => $nombre,
+                'apellido_paterno' => $apellido_p,
+                'apellido_materno' => $apellido_m,
+                'email' => trim($_POST['email'] ?? ''),
+                'curp' => trim($_POST['curp'] ?? ''),
+                'telefono' => trim($_POST['telefono'] ?? ''),
+                'domicilio' => trim($_POST['domicilio'] ?? ''),
+                'grado_estudio' => trim($_POST['grado_estudio'] ?? ''),
+                'login_id' => trim($_POST['login_id'] ?? ''),
+                'estado' => $_POST['estado'] ?? 'Activo'
+            ];
+
             $datos_guardar = [
                 'numero_empleado' => trim($_POST['num_empleado'] ?? ''),
                 'nombre_completo' => trim("$nombre $apellido_p $apellido_m"),
@@ -110,12 +134,39 @@ class DocentesController extends Controller
 
             // Crear el usuario de acceso si se proporcionó
             $id_usuario = null;
-            if (!empty($_POST['login_id']) && !empty($_POST['password'])) {
-                require_once 'modulos/usuarios/conexion.php';
-                $usuarioModel = new Usuario();
-                $datos_usu = ['nombre_usuario' => trim($_POST['login_id']), 'estado' => $datos_guardar['estado']];
-                $contrasena = password_hash($_POST['password'], PASSWORD_DEFAULT);
-                $id_usuario = $usuarioModel->create($datos_usu, $contrasena);
+            $password = $_POST['password'] ?? '';
+            $password2 = $_POST['password2'] ?? '';
+            
+            if (!empty($_POST['login_id']) || !empty($password)) {
+                if ($password !== $password2) {
+                    return $this->view('docentes/create', [
+                        'datos' => $datos, 
+                        'errors' => ['password' => 'Las contraseñas no coinciden.']
+                    ]);
+                } elseif (empty($password)) {
+                    return $this->view('docentes/create', [
+                        'datos' => $datos, 
+                        'errors' => ['password' => 'Debe proporcionar una contraseña para el usuario.']
+                    ]);
+                } else {
+                    require_once 'modulos/usuarios/conexion.php';
+                    $usuarioModel = new Usuario();
+                    
+                    // Verificar que el usuario no exista
+                    $db = db_connect();
+                    $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ?");
+                    $st->execute([trim($_POST['login_id'])]);
+                    if ($st->fetch()) {
+                        return $this->view('docentes/create', [
+                            'datos' => $datos, 
+                            'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
+                        ]);
+                    }
+
+                    $datos_usu = ['nombre_usuario' => trim($_POST['login_id']), 'estado' => $datos_guardar['estado']];
+                    $contrasena = password_hash($password, PASSWORD_DEFAULT);
+                    $id_usuario = $usuarioModel->create($datos_usu, $contrasena);
+                }
             }
 
             try {
@@ -167,6 +218,18 @@ class DocentesController extends Controller
             $apellido_p = trim($_POST['apellido_p'] ?? '');
             $apellido_m = trim($_POST['apellido_m'] ?? '');
 
+            $docente['numero_empleado'] = trim($_POST['num_empleado'] ?? '');
+            $docente['nombre_completo'] = $nombre;
+            $docente['apellido_paterno'] = $apellido_p;
+            $docente['apellido_materno'] = $apellido_m;
+            $docente['email'] = trim($_POST['email'] ?? '');
+            $docente['curp'] = trim($_POST['curp'] ?? '');
+            $docente['telefono'] = trim($_POST['telefono'] ?? '');
+            $docente['domicilio'] = trim($_POST['domicilio'] ?? '');
+            $docente['grado_estudio'] = trim($_POST['grado_estudio'] ?? '');
+            $docente['login_id'] = trim($_POST['login_id'] ?? '');
+            $docente['estado'] = $_POST['estado'] ?? 'Activo';
+
             $datos_guardar = [
                 'numero_empleado' => trim($_POST['num_empleado'] ?? ''),
                 'nombre_completo' => trim("$nombre $apellido_p $apellido_m"),
@@ -204,8 +267,29 @@ class DocentesController extends Controller
             $usuarioModel = new Usuario();
             
             if (!empty($_POST['login_id'])) {
+                $password = $_POST['password'] ?? '';
+                $password2 = $_POST['password2'] ?? '';
+                
+                if (!empty($password) && $password !== $password2) {
+                    return $this->view('docentes/edit', [
+                        'datos' => $docente, 
+                        'errors' => ['password' => 'Las contraseñas no coinciden.']
+                    ]);
+                }
+                
+                // Verificar nombre de usuario (ignorando el actual)
+                $db = db_connect();
+                $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ? AND id_usuario != ?");
+                $st->execute([trim($_POST['login_id']), $docente['id_usuario'] ?? 0]);
+                if ($st->fetch()) {
+                    return $this->view('docentes/edit', [
+                        'datos' => $docente, 
+                        'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
+                    ]);
+                }
+
                 $datos_usu = ['nombre_usuario' => trim($_POST['login_id']), 'estado' => $datos_guardar['estado']];
-                $contrasena = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
+                $contrasena = !empty($password) ? password_hash($password, PASSWORD_DEFAULT) : null;
                 
                 if (!empty($docente['id_usuario'])) {
                     // Actualizar

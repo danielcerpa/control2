@@ -107,7 +107,7 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <label class="small font-weight-bold">Teléfono del Tutor</label>
-                                <input type="text" name="tutor_telefono" id="f_tutor_telefono" class="form-control" maxlength="20" style="border-radius:8px;">
+                                <input type="tel" name="tutor_telefono" id="f_tutor_telefono" class="form-control" maxlength="10" pattern="[0-9]{1,10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" style="border-radius:8px;">
                             </div>
                         </div>
                         <div class="form-group mb-0">

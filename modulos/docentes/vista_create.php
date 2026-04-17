@@ -84,8 +84,8 @@
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control"
-                                value="<?php echo e($datos['telefono']); ?>" maxlength="20" style="border-radius:8px;">
+                            <input type="tel" name="telefono" class="form-control"
+                                value="<?php echo e($datos['telefono']); ?>" maxlength="10" pattern="[0-9]{1,10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Grado de Estudios</label>

@@ -28,39 +28,56 @@ class HorariosController extends Controller
         $ciclo = $this->cicloModel->getActivo();
 
         $filtros = [
-            'grupo_id'   => (int) ($_GET['grupo']   ?? 0),
-            'docente_id' => (int) ($_GET['docente'] ?? 0),
-            'salon_id'   => (int) ($_GET['salon']   ?? 0),
+            'q'        => trim($_GET['q']     ?? ''),
+            'grupo_id' => (int) ($_GET['grupo'] ?? 0),
         ];
 
-        $grupos   = $this->grupoModel->getAll();
-        $docentes = $this->docenteModel->getAll();
-        $salones  = $this->salonModel->getAll();
-        $ofertas  = $this->horarioModel->getAll();
+        $alumnos = $this->horarioModel->getAlumnos();
+        $grupos  = $this->grupoModel->getAll();
 
-        // Organizar por día para el grid
-        $dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
-        $grid = [];
-        foreach ($dias as $d) {
-            $grid[$d] = [];
+        // Filtrar en PHP
+        if ($filtros['q']) {
+            $q = strtolower($filtros['q']);
+            $alumnos = array_filter($alumnos, function ($a) use ($q) {
+                return strpos(strtolower($a['nombre']), $q) !== false
+                    || strpos(strtolower($a['apellido_paterno']), $q) !== false
+                    || strpos(strtolower($a['matricula']), $q) !== false;
+            });
         }
-        foreach ($ofertas as $o) {
-            $dia = ucfirst(strtolower($o['dia'] ?? ''));
-            if (isset($grid[$dia])) {
-                $grid[$dia][] = $o;
+        if ($filtros['grupo_id']) {
+            $nombreGrupo = '';
+            foreach ($grupos as $g) {
+                if ($g['id_grupo'] == $filtros['grupo_id']) {
+                    $nombreGrupo = $g['grado'] . $g['seccion'];
+                    break;
+                }
+            }
+            if ($nombreGrupo) {
+                $alumnos = array_filter($alumnos, function ($a) use ($nombreGrupo) {
+                    return ($a['grupo_nombre'] ?? '') === $nombreGrupo;
+                });
             }
         }
 
         $this->view('horarios/index', [
-            'u'        => $u,
-            'ciclo'    => $ciclo,
-            'filtros'  => $filtros,
-            'grupos'   => $grupos,
-            'docentes' => $docentes,
-            'salones'  => $salones,
-            'dias'     => $dias,
-            'grid'     => $grid,
+            'u'       => $u,
+            'ciclo'   => $ciclo,
+            'filtros' => $filtros,
+            'alumnos' => array_values($alumnos),
+            'grupos'  => $grupos,
         ]);
+    }
+
+    /**
+     * Devuelve el horario semanal de un alumno en JSON (para el modal).
+     * URL: horarios/horario/{id_alumno}
+     */
+    public function horario($id_alumno)
+    {
+        header('Content-Type: application/json');
+        $filas = $this->horarioModel->getHorarioPorAlumno((int)$id_alumno);
+        echo json_encode($filas);
+        exit;
     }
 
     public function create()
@@ -93,21 +110,21 @@ class HorariosController extends Controller
 
             if (empty($datos['materia_id'])) $errors[] = 'La materia es obligatoria.';
             if (empty($datos['docente_id'])) $errors[] = 'El docente es obligatorio.';
-            if (empty($datos['dia']))        $errors[] = 'El día es obligatorio.';
+            if (empty($datos['dia']))        $errors[] = 'El dia es obligatorio.';
             if (empty($datos['hora_inicio'])) $errors[] = 'La hora de inicio es obligatoria.';
             if (empty($datos['hora_fin']))   $errors[] = 'La hora de fin es obligatoria.';
 
             if (empty($errors)) {
                 $guardado = [
-                    'id_materia'   => $datos['materia_id'],
-                    'id_profesor'  => $datos['docente_id'],
-                    'id_salon'     => $datos['salon_id']   ?: null,
-                    'id_grupo'     => $datos['grupo_id']   ?: null,
-                    'dia'          => strtoupper($datos['dia']),
-                    'hora_inicio'  => $datos['hora_inicio'],
-                    'hora_fin'     => $datos['hora_fin'],
-                    'ciclo_escolar'=> $datos['ciclo_id']   ?? '',
-                    'estado'       => 1,
+                    'id_materia'    => $datos['materia_id'],
+                    'id_profesor'   => $datos['docente_id'],
+                    'id_salon'      => $datos['salon_id']   ?: null,
+                    'id_grupo'      => $datos['grupo_id']   ?: null,
+                    'dia'           => strtoupper($datos['dia']),
+                    'hora_inicio'   => $datos['hora_inicio'],
+                    'hora_fin'      => $datos['hora_fin'],
+                    'ciclo_escolar' => $datos['ciclo_id']   ?? '',
+                    'estado'        => 1,
                 ];
                 $this->horarioModel->create($guardado);
                 header('Location: ' . BASE_URL . 'horarios');
@@ -138,13 +155,13 @@ class HorariosController extends Controller
         $errors   = [];
         $warnings = [];
         $datos    = [
-            'materia_id'  => $oferta['id_materia']  ?? '',
+            'materia_id'  => $oferta['id_materia']   ?? '',
             'docente_id'  => $oferta['id_profesor']  ?? '',
-            'salon_id'    => $oferta['id_salon']     ?? '',
-            'grupo_id'    => $oferta['id_grupo']     ?? '',
-            'dia'         => $oferta['dia']          ?? '',
-            'hora_inicio' => $oferta['hora_inicio']  ?? '',
-            'hora_fin'    => $oferta['hora_fin']     ?? '',
+            'salon_id'    => $oferta['id_salon']      ?? '',
+            'grupo_id'    => $oferta['id_grupo']      ?? '',
+            'dia'         => $oferta['dia']           ?? '',
+            'hora_inicio' => $oferta['hora_inicio']   ?? '',
+            'hora_fin'    => $oferta['hora_fin']      ?? '',
             'ciclo_id'    => $oferta['ciclo_escolar'] ?? '',
         ];
 
@@ -170,15 +187,15 @@ class HorariosController extends Controller
 
             if (empty($errors)) {
                 $guardado = [
-                    'id_materia'   => $datos['materia_id'],
-                    'id_profesor'  => $datos['docente_id'],
-                    'id_salon'     => $datos['salon_id']   ?: null,
-                    'id_grupo'     => $datos['grupo_id']   ?: null,
-                    'dia'          => strtoupper($datos['dia']),
-                    'hora_inicio'  => $datos['hora_inicio'],
-                    'hora_fin'     => $datos['hora_fin'],
-                    'ciclo_escolar'=> $datos['ciclo_id'] ?? '',
-                    'estado'       => isset($_POST['estado']) ? 1 : 0,
+                    'id_materia'    => $datos['materia_id'],
+                    'id_profesor'   => $datos['docente_id'],
+                    'id_salon'      => $datos['salon_id']   ?: null,
+                    'id_grupo'      => $datos['grupo_id']   ?: null,
+                    'dia'           => strtoupper($datos['dia']),
+                    'hora_inicio'   => $datos['hora_inicio'],
+                    'hora_fin'      => $datos['hora_fin'],
+                    'ciclo_escolar' => $datos['ciclo_id'] ?? '',
+                    'estado'        => isset($_POST['estado']) ? 1 : 0,
                 ];
                 $this->horarioModel->update($id, $guardado);
                 header('Location: ' . BASE_URL . 'horarios');

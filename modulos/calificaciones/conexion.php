@@ -13,13 +13,31 @@ class Calificacion
     public function getAll()
     {
         $st = $this->db->query(
-            "SELECT c.*, i.id_alumno, a.matricula, a.nombre, a.apellido_paterno, m.id_materia, m.nombre AS materia
+            "SELECT c.*, i.id_alumno, a.matricula, 
+             CONCAT(a.nombre, ' ', a.apellido_paterno, ' ', IFNULL(a.apellido_materno, '')) AS nombre_completo, 
+             m.id_materia, m.nombre AS materia
              FROM calificaciones c
              JOIN inscripciones i ON c.id_inscripcion = i.id_inscripcion
              JOIN alumnos a ON i.id_alumno = a.id_alumno
              JOIN materias m ON i.id_materia = m.id_materia
              ORDER BY c.fecha_registro DESC"
         );
+        return $st->fetchAll();
+    }
+
+    public function getByFilter($id_grupo, $id_materia)
+    {
+        $st = $this->db->prepare(
+            "SELECT c.*, i.id_alumno, i.id_inscripcion, a.matricula, 
+             CONCAT(a.nombre, ' ', a.apellido_paterno, ' ', IFNULL(a.apellido_materno,'')) AS nombre_completo
+             FROM inscripciones i
+             JOIN alumnos a ON i.id_alumno = a.id_alumno
+             JOIN materias m ON i.id_materia = m.id_materia
+             LEFT JOIN calificaciones c ON i.id_inscripcion = c.id_inscripcion
+             WHERE m.id_grupo = ? AND m.id_materia = ?
+             ORDER BY a.apellido_paterno, a.nombre"
+        );
+        $st->execute([$id_grupo, $id_materia]);
         return $st->fetchAll();
     }
 
