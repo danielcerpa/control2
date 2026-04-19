@@ -39,6 +39,15 @@ CREATE TABLE perfiles (
     clave_exportar BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE grupos (
+    id_grupo BIGINT AUTO_INCREMENT PRIMARY KEY,
+    grado VARCHAR(10),
+    seccion VARCHAR(5),
+    ciclo_escolar VARCHAR(20),
+    turno ENUM('MATUTINO', 'VESPERTINO') DEFAULT 'MATUTINO'
+);
+--=========================================================================================
+
 -- relaciona usuarios con modulos usando un perfil especifico
 CREATE TABLE permisos (
     id_permiso BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -96,13 +105,6 @@ CREATE TABLE salones (
 );
 
 -- grupos tipo 1A, 2B, etc.
-CREATE TABLE grupos (
-    id_grupo BIGINT AUTO_INCREMENT PRIMARY KEY,
-    grado VARCHAR(10),
-    seccion VARCHAR(5),
-    ciclo_escolar VARCHAR(20),
-    turno ENUM('MATUTINO', 'VESPERTINO') DEFAULT 'MATUTINO'
-);
 
 -- que alumnos pertenecen a que grupo
 CREATE TABLE alumno_grupo (

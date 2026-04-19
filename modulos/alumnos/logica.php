@@ -224,6 +224,12 @@ class AlumnosController extends Controller
                 redirect(BASE_URL . 'alumnos', 'Alumno registrado exitosamente');
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    $error_msg = 'La matrícula o CURP ya está en uso por otro alumno';
+                    if (strpos(strtolower($e->getMessage()), 'matricula') !== false) {
+                        $error_msg = 'Esta matrícula ya está en uso por otro alumno';
+                    } elseif (strpos(strtolower($e->getMessage()), 'curp') !== false) {
+                        $error_msg = 'Esta CURP ya está en uso por otro alumno';
+                    }
                     // Prevenir crash, volver al formulario con error sutil
                     $modulo_activo = 'alumnos';
                     $grupos = []; 
@@ -231,7 +237,7 @@ class AlumnosController extends Controller
                         'modulo_activo' => $modulo_activo, 
                         'datos' => $datos, 
                         'grupos' => $grupos, 
-                        'errors' => ['matricula' => 'La matrícula o CURP ya está en uso por otro alumno']
+                        'errors' => ['matricula' => $error_msg]
                     ]);
                 }
                 throw $e; // Si es otro error, dejar que el sistema lo maneje
@@ -345,12 +351,18 @@ class AlumnosController extends Controller
                 redirect(BASE_URL . 'alumnos', 'Alumno actualizado correctamente');
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    $error_msg = 'No se pudo guardar: La matrícula o CURP ya existe en otro registro';
+                    if (strpos(strtolower($e->getMessage()), 'matricula') !== false) {
+                        $error_msg = 'No se pudo guardar: Esta matrícula ya existe en otro registro';
+                    } elseif (strpos(strtolower($e->getMessage()), 'curp') !== false) {
+                        $error_msg = 'No se pudo guardar: Esta CURP ya existe en otro registro';
+                    }
                     $modulo_activo = 'alumnos';
                     return $this->view('alumnos/edit', [
                         'modulo_activo' => $modulo_activo, 
                         'datos' => $datos, 
                         'grupos' => [], 
-                        'errors' => ['matricula' => 'No se pudo guardar: La matrícula o CURP ya existe en otro registro']
+                        'errors' => ['matricula' => $error_msg]
                     ]);
                 }
                 throw $e;
@@ -371,10 +383,20 @@ class AlumnosController extends Controller
         $this->view('alumnos/edit', ['datos' => $alumno, 'grupos' => [], 'modulo_activo' => $modulo_activo, 'errors' => []]);
     }
 
-    public function delete($id)
+        public function delete($id)
     {
-        $this->alumnoModel->delete($id);
-        header('Location: ' . BASE_URL . 'alumnos');
-        exit;
+        try {
+            $this->alumnoModel->delete($id);
+            redirect(BASE_URL . 'alumnos', 'Registro eliminado correctamente');
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
+                $tabla = 'otro módulo';
+                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
+                    $tabla = $m[1];
+                }
+                redirect(BASE_URL . 'alumnos', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+            }
+            throw $e;
+        }
     }
 }

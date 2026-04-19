@@ -174,9 +174,15 @@ class DocentesController extends Controller
                 redirect(BASE_URL . 'docentes', 'Docente registrado exitosamente');
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    $error_msg = 'El número de empleado o CURP ya está registrado';
+                    if (strpos(strtolower($e->getMessage()), 'numero_empleado') !== false || strpos(strtolower($e->getMessage()), 'num_empleado') !== false) {
+                        $error_msg = 'Este número de empleado ya está registrado por otro docente';
+                    } elseif (strpos(strtolower($e->getMessage()), 'curp') !== false) {
+                        $error_msg = 'Esta CURP ya está registrada por otro docente';
+                    }
                     return $this->view('docentes/create', [
                         'datos' => $datos, 
-                        'errors' => ['num_empleado' => 'El número de empleado o CURP ya está registrado']
+                        'errors' => ['num_empleado' => $error_msg]
                     ]);
                 }
                 throw $e;
@@ -310,9 +316,15 @@ class DocentesController extends Controller
                 redirect(BASE_URL . 'docentes', 'Datos del docente actualizados');
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
+                    $error_msg = 'Error: El número de empleado o CURP pertenece a otro docente';
+                    if (strpos(strtolower($e->getMessage()), 'numero_empleado') !== false || strpos(strtolower($e->getMessage()), 'num_empleado') !== false) {
+                        $error_msg = 'Error: Este número de empleado pertenece a otro docente';
+                    } elseif (strpos(strtolower($e->getMessage()), 'curp') !== false) {
+                        $error_msg = 'Error: Esta CURP pertenece a otro docente';
+                    }
                     return $this->view('docentes/edit', [
                         'datos' => $docente, 
-                        'errors' => ['num_empleado' => 'Error: El número de empleado o CURP pertenece a otro docente']
+                        'errors' => ['num_empleado' => $error_msg]
                     ]);
                 }
                 throw $e;
@@ -321,10 +333,20 @@ class DocentesController extends Controller
         $this->view('docentes/edit', ['datos' => $docente, 'errors' => []]);
     }
 
-    public function delete($id)
+        public function delete($id)
     {
-        $this->docenteModel->delete($id);
-        header('Location: ' . BASE_URL . 'docentes');
-        exit;
+        try {
+            $this->docenteModel->delete($id);
+            redirect(BASE_URL . 'docentes', 'Registro eliminado correctamente');
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
+                $tabla = 'otro módulo';
+                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
+                    $tabla = $m[1];
+                }
+                redirect(BASE_URL . 'docentes', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+            }
+            throw $e;
+        }
     }
 }

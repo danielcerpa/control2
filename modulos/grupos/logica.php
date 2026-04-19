@@ -117,10 +117,20 @@ class GruposController extends Controller
         ]);
     }
 
-    public function delete($id)
+        public function delete($id)
     {
-        $this->grupoModel->delete($id);
-        header('Location: ' . BASE_URL . 'grupos');
-        exit;
+        try {
+            $this->grupoModel->delete($id);
+            redirect(BASE_URL . 'grupos', 'Registro eliminado correctamente');
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
+                $tabla = 'otro módulo';
+                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
+                    $tabla = $m[1];
+                }
+                redirect(BASE_URL . 'grupos', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+            }
+            throw $e;
+        }
     }
 }
