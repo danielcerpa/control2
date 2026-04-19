@@ -132,6 +132,9 @@ class DocentesController extends Controller
                 }
             }
 
+            $db = db_connect();
+            $db->beginTransaction();
+
             // Crear el usuario de acceso si se proporcionó
             $id_usuario = null;
             $password = $_POST['password'] ?? '';
@@ -139,11 +142,13 @@ class DocentesController extends Controller
             
             if (!empty($_POST['login_id']) || !empty($password)) {
                 if ($password !== $password2) {
+                    $db->rollBack();
                     return $this->view('docentes/create', [
                         'datos' => $datos, 
                         'errors' => ['password' => 'Las contraseñas no coinciden.']
                     ]);
                 } elseif (empty($password)) {
+                    $db->rollBack();
                     return $this->view('docentes/create', [
                         'datos' => $datos, 
                         'errors' => ['password' => 'Debe proporcionar una contraseña para el usuario.']
@@ -153,10 +158,10 @@ class DocentesController extends Controller
                     $usuarioModel = new Usuario();
                     
                     // Verificar que el usuario no exista
-                    $db = db_connect();
                     $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ?");
                     $st->execute([trim($_POST['login_id'])]);
                     if ($st->fetch()) {
+                        $db->rollBack();
                         return $this->view('docentes/create', [
                             'datos' => $datos, 
                             'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
@@ -171,8 +176,10 @@ class DocentesController extends Controller
 
             try {
                 $this->docenteModel->create($datos_guardar, $id_usuario);
+                $db->commit();
                 redirect(BASE_URL . 'docentes', 'Docente registrado exitosamente');
             } catch (PDOException $e) {
+                $db->rollBack();
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
                     $error_msg = 'El número de empleado o CURP ya está registrado';
                     if (strpos(strtolower($e->getMessage()), 'numero_empleado') !== false || strpos(strtolower($e->getMessage()), 'num_empleado') !== false) {
@@ -268,6 +275,9 @@ class DocentesController extends Controller
                 }
             }
 
+            $db = db_connect();
+            $db->beginTransaction();
+
             // Actualizar o crear Usuario
             require_once 'modulos/usuarios/conexion.php';
             $usuarioModel = new Usuario();
@@ -277,6 +287,7 @@ class DocentesController extends Controller
                 $password2 = $_POST['password2'] ?? '';
                 
                 if (!empty($password) && $password !== $password2) {
+                    $db->rollBack();
                     return $this->view('docentes/edit', [
                         'datos' => $docente, 
                         'errors' => ['password' => 'Las contraseñas no coinciden.']
@@ -284,10 +295,10 @@ class DocentesController extends Controller
                 }
                 
                 // Verificar nombre de usuario (ignorando el actual)
-                $db = db_connect();
                 $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ? AND id_usuario != ?");
                 $st->execute([trim($_POST['login_id']), $docente['id_usuario'] ?? 0]);
                 if ($st->fetch()) {
+                    $db->rollBack();
                     return $this->view('docentes/edit', [
                         'datos' => $docente, 
                         'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
@@ -313,8 +324,10 @@ class DocentesController extends Controller
 
             try {
                 $this->docenteModel->update($id, $datos_guardar);
+                $db->commit();
                 redirect(BASE_URL . 'docentes', 'Datos del docente actualizados');
             } catch (PDOException $e) {
+                $db->rollBack();
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
                     $error_msg = 'Error: El número de empleado o CURP pertenece a otro docente';
                     if (strpos(strtolower($e->getMessage()), 'numero_empleado') !== false || strpos(strtolower($e->getMessage()), 'num_empleado') !== false) {

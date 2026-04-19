@@ -165,11 +165,15 @@ class AlumnosController extends Controller
                 }
             }
 
+            $datos_vista = $datos;
+            $datos_vista['estado'] = $_POST['estado'] ?? 'Activo';
+            $datos_vista['genero'] = $_POST['sexo'] ?? '';
+
             if (!empty($errors)) {
                 $modulo_activo = 'alumnos';
                 return $this->view('alumnos/create', [
                     'modulo_activo' => $modulo_activo, 
-                    'datos' => $datos, 
+                    'datos' => $datos_vista, 
                     'grupos' => [], 
                     'errors' => $errors
                 ]);
@@ -196,19 +200,22 @@ class AlumnosController extends Controller
 
             // Crear el usuario de acceso si se proporcionó
             $id_usuario = null;
+            $db = db_connect();
+            $db->beginTransaction();
+
             if (!empty($datos['login_id']) && !empty($password)) {
                 require_once 'modulos/usuarios/conexion.php';
                 $usuarioModel = new Usuario();
                 
                 // Verificar que el usuario no exista
-                $db = db_connect();
                 $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ?");
                 $st->execute([$datos['login_id']]);
                 if ($st->fetch()) {
+                    $db->rollBack();
                     $modulo_activo = 'alumnos';
                     return $this->view('alumnos/create', [
                         'modulo_activo' => $modulo_activo, 
-                        'datos' => $datos, 
+                        'datos' => $datos_vista, 
                         'grupos' => [], 
                         'errors' => ['El nombre de usuario (login_id) ya está en uso.']
                     ]);
@@ -221,8 +228,10 @@ class AlumnosController extends Controller
 
             try {
                 $this->alumnoModel->create($datos, $id_usuario);
+                $db->commit();
                 redirect(BASE_URL . 'alumnos', 'Alumno registrado exitosamente');
             } catch (PDOException $e) {
+                $db->rollBack();
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
                     $error_msg = 'La matrícula o CURP ya está en uso por otro alumno';
                     if (strpos(strtolower($e->getMessage()), 'matricula') !== false) {
@@ -235,7 +244,7 @@ class AlumnosController extends Controller
                     $grupos = []; 
                     return $this->view('alumnos/create', [
                         'modulo_activo' => $modulo_activo, 
-                        'datos' => $datos, 
+                        'datos' => $datos_vista, 
                         'grupos' => $grupos, 
                         'errors' => ['matricula' => $error_msg]
                     ]);
@@ -258,6 +267,7 @@ class AlumnosController extends Controller
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $datos = [
+                'id_alumno' => $id,
                 'matricula' => trim($_POST['matricula']),
                 'nombre' => trim($_POST['nombre']),
                 'apellido_paterno' => trim($_POST['apellido_p'] ?? ''),
@@ -275,8 +285,10 @@ class AlumnosController extends Controller
                 'comentarios' => trim($_POST['comentarios_familia'] ?? ''),
                 'comentarios_familia' => trim($_POST['comentarios_familia'] ?? ''),
                 'estado' => isset($_POST['estado']) && $_POST['estado'] !== 'Inactivo' && $_POST['estado'] !== 'Baja' ? 1 : 0,
+                'grupo_id' => trim($_POST['grupo_id'] ?? ''),
                 'login_id' => trim($_POST['login_id'] ?? '')
             ];
+
 
             // Procesar foto base64 o si fue eliminada
             $datos['ruta_foto'] = $alumno['ruta_foto']; // Mantener la anterior por defecto
@@ -299,6 +311,13 @@ class AlumnosController extends Controller
                 }
             }
 
+            $datos_vista = $datos;
+            $datos_vista['estado'] = $_POST['estado'] ?? 'Activo';
+            $datos_vista['genero'] = $_POST['sexo'] ?? '';
+
+            $db = db_connect();
+            $db->beginTransaction();
+
             // Actualizar o crear Usuario
             require_once 'modulos/usuarios/conexion.php';
             $usuarioModel = new Usuario();
@@ -308,24 +327,25 @@ class AlumnosController extends Controller
                 $password2 = $_POST['password2'] ?? '';
                 
                 if (!empty($password) && $password !== $password2) {
+                    $db->rollBack();
                     $modulo_activo = 'alumnos';
                     return $this->view('alumnos/edit', [
                         'modulo_activo' => $modulo_activo, 
-                        'datos' => $datos, 
+                        'datos' => $datos_vista, 
                         'grupos' => [], 
                         'errors' => ['password' => 'Las contraseñas no coinciden.']
                     ]);
                 }
 
                 // Verificar nombre de usuario (ignorando el actual)
-                $db = db_connect();
                 $st = $db->prepare("SELECT id_usuario FROM usuarios WHERE nombre_usuario = ? AND id_usuario != ?");
                 $st->execute([trim($_POST['login_id']), $alumno['id_usuario'] ?? 0]);
                 if ($st->fetch()) {
+                    $db->rollBack();
                     $modulo_activo = 'alumnos';
                     return $this->view('alumnos/edit', [
                         'modulo_activo' => $modulo_activo, 
-                        'datos' => $datos, 
+                        'datos' => $datos_vista, 
                         'grupos' => [], 
                         'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
                     ]);
@@ -348,8 +368,10 @@ class AlumnosController extends Controller
 
             try {
                 $this->alumnoModel->update($id, $datos);
+                $db->commit();
                 redirect(BASE_URL . 'alumnos', 'Alumno actualizado correctamente');
             } catch (PDOException $e) {
+                $db->rollBack();
                 if ($e->getCode() == 23000 && strpos($e->getMessage(), '1062') !== false) {
                     $error_msg = 'No se pudo guardar: La matrícula o CURP ya existe en otro registro';
                     if (strpos(strtolower($e->getMessage()), 'matricula') !== false) {
@@ -360,7 +382,7 @@ class AlumnosController extends Controller
                     $modulo_activo = 'alumnos';
                     return $this->view('alumnos/edit', [
                         'modulo_activo' => $modulo_activo, 
-                        'datos' => $datos, 
+                        'datos' => $datos_vista, 
                         'grupos' => [], 
                         'errors' => ['matricula' => $error_msg]
                     ]);
