@@ -123,10 +123,20 @@ class SalonesController extends Controller
         ]);
     }
 
-    public function delete($id)
+        public function delete($id)
     {
-        $this->salonModel->delete($id);
-        header('Location: ' . BASE_URL . 'salones');
-        exit;
+        try {
+            $this->salonModel->delete($id);
+            redirect(BASE_URL . 'salones', 'Registro eliminado correctamente');
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
+                $tabla = 'otro módulo';
+                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
+                    $tabla = $m[1];
+                }
+                redirect(BASE_URL . 'salones', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+            }
+            throw $e;
+        }
     }
 }

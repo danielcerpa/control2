@@ -118,10 +118,20 @@ class CalificacionesController extends Controller
         ]);
     }
 
-    public function delete($id)
+        public function delete($id)
     {
-        $this->calificacionModel->delete($id);
-        header('Location: ' . BASE_URL . 'calificaciones');
-        exit;
+        try {
+            $this->calificacionModel->delete($id);
+            redirect(BASE_URL . 'calificaciones', 'Registro eliminado correctamente');
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
+                $tabla = 'otro módulo';
+                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
+                    $tabla = $m[1];
+                }
+                redirect(BASE_URL . 'calificaciones', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+            }
+            throw $e;
+        }
     }
 }
