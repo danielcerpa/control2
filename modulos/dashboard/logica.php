@@ -12,6 +12,13 @@ class DashboardController extends Controller
         $u   = session_user();
         $pdo = db_connect();
 
+        // Los alumnos van directamente a su portal
+        if ($u['rol'] === 'alumno') {
+            header('Location: ' . BASE_URL . 'alumno/perfil');
+            exit;
+        }
+
+
         $mis_horarios_hoy = array();
         if ($u['tipo'] === 'docente' || $u['rol'] === 'profesor') {
             $dias_es = array(

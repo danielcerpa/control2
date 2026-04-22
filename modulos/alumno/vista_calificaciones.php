@@ -29,8 +29,8 @@
         <table class="table table-hover mb-0">
             <thead class="bg-light">
                 <tr class="text-uppercase" style="font-size:11px; letter-spacing:1px;">
-                    <th class="pl-4">Clave</th>
-                    <th>Materia</th>
+                    <th class="pl-4">Materia</th>
+                    <th class="text-center">Período</th>
                     <th class="text-center">Calificación</th>
                     <th class="text-center">Estado</th>
                     <th>Fecha Registro</th>
@@ -44,25 +44,35 @@
                 <?php endif; ?>
                 <?php foreach ($calificaciones as $c): ?>
                     <tr>
-                        <td class="pl-4"><code class="text-primary"><?php echo e($c['clave']); ?></code></td>
-                        <td class="font-weight-bold" style="color:#334155;"><?php echo e($c['materia']); ?></td>
+                        <td class="pl-4 font-weight-bold" style="color:#334155;"><?php echo e($c['materia']); ?></td>
                         <td class="text-center align-middle">
-                            <span class="h5 font-weight-bold mb-0 <?php echo $c['puntaje'] >= 6 ? 'text-dark' : 'text-danger'; ?>">
-                                <?php echo number_format($c['puntaje'], 1); ?>
+                            <span class="badge" style="background:#eff6ff; color:#1e40af; border-radius:20px; padding:5px 14px; font-size:11px;">
+                                <?php echo e($c['etiqueta_periodo'] ?? '—'); ?>
                             </span>
                         </td>
                         <td class="text-center align-middle">
-                            <?php if ($c['puntaje'] >= 6): ?>
+                            <?php if ($c['puntaje'] !== null): ?>
+                            <span class="h5 font-weight-bold mb-0 <?php echo $c['puntaje'] >= 6 ? 'text-dark' : 'text-danger'; ?>">
+                                <?php echo number_format($c['puntaje'], 1); ?>
+                            </span>
+                            <?php else: ?>
+                            <span class="text-muted small">—</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center align-middle">
+                            <?php if ($c['puntaje'] !== null && $c['puntaje'] >= 6): ?>
                                 <span class="badge" style="background:#dcfce7; color:#166534; border-radius:30px; padding:6px 15px; font-size:10px;">
                                     <span class="material-symbols-outlined mr-1" style="font-size:14px; vertical-align:middle;">check_circle</span> APROBADO
                                 </span>
-                            <?php else: ?>
+                            <?php elseif ($c['puntaje'] !== null): ?>
                                 <span class="badge" style="background:#fee2e2; color:#991b1b; border-radius:30px; padding:6px 15px; font-size:10px;">
                                     <span class="material-symbols-outlined mr-1" style="font-size:14px; vertical-align:middle;">cancel</span> REPROBADO
                                 </span>
+                            <?php else: ?>
+                                <span class="badge" style="background:#f3f4f6; color:#6b7280; border-radius:30px; padding:6px 15px; font-size:10px;">PENDIENTE</span>
                             <?php endif; ?>
                         </td>
-                        <td class="small text-muted align-middle"><?php echo fmt_fecha($c['fecha_registro']); ?></td>
+                        <td class="small text-muted align-middle"><?php echo $c['fecha_registro'] ? fmt_fecha($c['fecha_registro']) : '—'; ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

@@ -1,0 +1,434 @@
+/* ===================================================
+   Módulo Alumno — alumno.css
+   Estilos exclusivos del portal del estudiante
+   =================================================== */
+
+/* ---------- PERFIL HERO CARD ---------- */
+.alumno-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #4338ca 100%);
+    border-radius: 16px;
+    color: #fff;
+    padding: 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.alumno-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+}
+
+.alumno-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    right: 60px;
+    width: 130px;
+    height: 130px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+}
+
+.alumno-hero .hero-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 3px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.alumno-hero .hero-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.alumno-hero .hero-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -0.3px;
+}
+
+.alumno-hero .hero-meta {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.alumno-hero .hero-badge {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 30px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+}
+
+/* ---------- ACCESS CARDS (QUICK NAV) ---------- */
+.alumno-nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    text-decoration: none !important;
+    color: #0e141b !important;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 160px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.alumno-nav-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    border-color: transparent;
+    text-decoration: none;
+    color: #fff !important;
+}
+
+.alumno-nav-card .nav-card-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    transition: all 0.25s;
+}
+
+.alumno-nav-card .nav-card-label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    transition: color 0.25s;
+}
+
+.alumno-nav-card .nav-card-desc {
+    font-size: 0.78rem;
+    color: #64748b;
+    transition: color 0.25s;
+}
+
+/* Card — Horario (Indigo) */
+.alumno-nav-card.card-horario .nav-card-icon {
+    background: #eef2ff;
+    color: #4338ca;
+}
+.alumno-nav-card.card-horario:hover {
+    background: linear-gradient(135deg, #4338ca, #6366f1);
+}
+
+/* Card — Calificaciones (Emerald) */
+.alumno-nav-card.card-calificaciones .nav-card-icon {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+.alumno-nav-card.card-calificaciones:hover {
+    background: linear-gradient(135deg, #15803d, #22c55e);
+}
+
+/* Card — Materias (Blue) */
+.alumno-nav-card.card-materias .nav-card-icon {
+    background: #eff6ff;
+    color: #2563eb;
+}
+.alumno-nav-card.card-materias:hover {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+}
+
+.alumno-nav-card:hover .nav-card-icon {
+    background: rgba(255,255,255,0.2) !important;
+    color: #fff !important;
+}
+.alumno-nav-card:hover .nav-card-desc {
+    color: rgba(255,255,255,0.8);
+}
+
+/* ---------- STAT CHIPS (info rápida del alumno) ---------- */
+.alumno-stat-chip {
+    display: inline-flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 50px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    gap: 6px;
+}
+
+.alumno-stat-chip .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ---------- MATERIA CARD ---------- */
+.materia-card {
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 1.25rem 1.5rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.materia-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, #2563eb, #4338ca);
+    border-radius: 14px 0 0 14px;
+}
+
+.materia-card:hover {
+    box-shadow: 0 8px 20px rgba(37,99,235,0.1);
+    border-color: #bfdbfe;
+    transform: translateY(-2px);
+}
+
+.materia-card .materia-nombre {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.materia-card .materia-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.materia-card .materia-meta .material-symbols-outlined {
+    font-size: 15px;
+}
+
+.materia-card .materia-badge-estado {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+/* ---------- EMPTY STATE ---------- */
+.empty-state-alumno {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #94a3b8;
+}
+
+.empty-state-alumno .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+}
+
+.empty-state-alumno h5 {
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+/* ---------- HORARIO SEMANAL MEJORADO ---------- */
+.horario-day-card {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    transition: box-shadow 0.2s;
+}
+
+.horario-day-card:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.horario-day-card .day-header {
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.horario-day-card .day-body {
+    padding: 0.75rem;
+    background: #f8fafc;
+    min-height: 100px;
+}
+
+.clase-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid #4338ca;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    transition: transform 0.15s;
+}
+
+.clase-item:last-child {
+    margin-bottom: 0;
+}
+
+.clase-item:hover {
+    transform: scale(1.01);
+}
+
+.clase-item .clase-nombre {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.clase-item .clase-info {
+    font-size: 0.75rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.clase-item .clase-info .material-symbols-outlined {
+    font-size: 14px;
+}
+
+/* ---------- CALIFICACIONES TABLA ---------- */
+.cal-badge-aprobado {
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 30px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.5px;
+}
+
+.cal-badge-reprobado {
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 30px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.5px;
+}
+
+.cal-badge-aprobado .material-symbols-outlined,
+.cal-badge-reprobado .material-symbols-outlined {
+    font-size: 14px;
+}
+
+.score-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1rem;
+    margin: 0 auto;
+}
+
+.score-circle.aprobado {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 2px solid #bbf7d0;
+}
+
+.score-circle.reprobado {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 2px solid #fecaca;
+}
+
+/* ---------- PROMEDIO CARD ---------- */
+.promedio-card {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #bbf7d0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.promedio-card.reprobado-general {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border-color: #fecaca;
+}
+
+.promedio-card .promedio-numero {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #15803d;
+}
+
+.promedio-card.reprobado-general .promedio-numero {
+    color: #dc2626;
+}
+
+.promedio-card .promedio-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4b5563;
+    margin-top: 4px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+    .alumno-hero {
+        padding: 1.5rem;
+    }
+
+    .alumno-hero .hero-name {
+        font-size: 1.2rem;
+    }
+
+    .alumno-nav-card {
+        min-height: 130px;
+        padding: 1.5rem 1rem;
+    }
+}

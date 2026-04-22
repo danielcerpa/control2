@@ -76,3 +76,63 @@ El sistema operaba originalmente sobre un paradigma lineal arcaico que limitaba 
 ### 5.3 Vitrinas Sensibles (Vista Index)
 - **Extracción de Variables Anidadas:** Las solicitudes del Backend sobre la base de datos se alteraron de recolección plana y lineal a anidación. Ahora, bajo del capó, todas las Materias y Horarios vienen con la colección interna de días asociada a ella.
 - **Renders de Badges Estéticos:** `vista_index.php` (de Materia) abandonó el formato `<campo vacío>`, mutando en agrupaciones visualmente estéticamente ordenadas mediante insignias de CSS (`badges`), mientras que la gran vitrina de tabulación universal (`modulos/horarios/conexion.php`) acopló el esquema a través de un `JOIN` logrando preservar la impecable cronológica académica (ordenados del Lunes al Sábado) sin importar bajo qué orden o jerarquía se agregaron en su edición.
+
+---
+
+## 6. Implementación Completa del Portal del Alumno (Módulo de Perfil)
+
+Se diseñó e implementó desde cero la interfaz visual del alumno, dotándolo de un portal dedicado con acceso exclusivo a sus tres recursos académicos: **Horario**, **Calificaciones** y **Materias**. El trabajo abarcó nuevas vistas, la expansión del modelo y controlador existentes, CSS exclusivo y ajustes transversales al sistema.
+
+### 6.1 Nuevas Vistas del Portal (`modulos/alumno/`)
+
+- **`vista_perfil.php` (nueva):** Página de inicio del alumno. Presenta una tarjeta hero de bienvenida con el nombre completo, matrícula, grupo, turno y ciclo escolar activo. Incluye chips de estadísticas rápidas (total de materias inscritas, aprobadas y reprobadas), un promedio general flotante destacado y tres tarjetas de acceso rápido con hover animado hacia los submódulos (Horario, Calificaciones y Materias). En la parte inferior se muestra un widget de "Últimas calificaciones registradas" con tabla resumida y enlace a la vista completa. Si aún no hay calificaciones, se presenta un estado vacío ilustrado.
+
+- **`vista_materias.php` (nueva):** Lista de materias inscritas del alumno para el ciclo activo. Cada materia se despliega como una tarjeta (`materia-card`) que incluye: nombre, docente asignado, aula, fechas de vigencia, bloque de días y horas de clase (extraídos de `materia_horarios`) y la última calificación del alumno con su círculo de estado (aprobado/reprobado). Si no hay materias, se muestra un estado vacío con icono y mensaje orientativo.
+
+- **`vista_calificaciones.php` (mejorada):** Se reemplazó la columna "Clave" (que referenciaba un campo inexistente en el schema) por una columna "Período" que muestra la `etiqueta_periodo` de la calificación. Se añadió protección contra valores `null` en el puntaje: la tabla maneja correctamente materias sin calificación aún, mostrando un badge "PENDIENTE" en lugar de errores PHP. La fecha de registro también se protegió contra null.
+
+### 6.2 Expansión del Modelo (`modulos/alumno/conexion.php`)
+
+Se reescribió completamente el modelo `AlumnoPortal` añadiendo los siguientes métodos:
+
+| Método | Función |
+|---|---|
+| `getAlumno($alumno_id)` | Retorna el expediente básico del alumno (matrícula, nombre, género, foto). |
+| `getGrupo($alumno_id)` | Retorna el grupo asignado al alumno (grado, sección, turno). |
+| `getAlumnoIdByUsuario($usuario_id)` | Resuelve el `id_alumno` a partir del `id_usuario` de sesión (fallback). |
+| `getUltimasCalificaciones($alumno_id, $limite)` | Retorna las N calificaciones más recientes para el widget del perfil. |
+| `getMaterias($alumno_id)` | Retorna las materias inscritas con sus horarios (subquery anidada sobre `materia_horarios`) y la última calificación de cada una. |
+| `getHorario($grupo_id, $ciclo_id)` | Actualizado para usar la tabla `materia_horarios` en lugar de los campos directos en `materias`. |
+| `getCalificaciones($alumno_id, $ciclo_id)` | Corregido: se eliminó la columna `m.clave` que no existe en el schema actual, y se añadió `c.etiqueta_periodo`. |
+
+### 6.3 Expansión del Controlador (`modulos/alumno/logica.php`)
+
+Se reescribió el controlador `AlumnoController` incluyendo:
+
+- **Método `perfil()`:** Carga los datos del alumno, grupo, ciclo, últimas calificaciones y estadísticas resumidas (totales, aprobadas, reprobadas, promedio general). Envía todo a `vista_perfil.php`.
+- **Método `materias()`:** Carga la lista completa de materias inscritas con horarios anidados. Envía a `vista_materias.php`.
+- **Método `horario()`:** Actualizado para normalizar correctamente los días (de `LUNES` en BD a `Lunes` para el grid) usando `ucfirst(strtolower())`.
+- **Método `calificaciones()`:** Actualizado para calcular el promedio omitiendo valores `null`.
+- **Utilidad privada `getAlumnoId()`:** Prioriza `$_SESSION['usuario_entidad_id']` (ya guardado por `AuthController` al hacer login) evitando consultas redundantes a la BD, con fallback al método `getAlumnoIdByUsuario()`.
+
+### 6.4 CSS Exclusivo del Portal (`assets/css/alumno.css`)
+
+Se creó desde cero una hoja de estilos dedicada al módulo del alumno con los siguientes componentes visuales, todos consistentes con el sistema de diseño de `app.css`:
+
+- **`.alumno-hero`** — Tarjeta hero con gradiente azul-índigo, pseudo-elementos de círculos decorativos y soporte para avatar con foto o inicial.
+- **`.alumno-nav-card`** — Tarjetas de acceso rápido con animación de hover `translateY` y cambio de fondo a gradiente de color según el módulo (índigo para Horario, verde para Calificaciones, azul para Materias).
+- **`.alumno-stat-chip`** — Etiquetas de información rápida con ícono y texto inline.
+- **`.materia-card`** — Tarjeta de materia con borde izquierdo degradado azul-índigo, hover con `box-shadow` y `translateY`.
+- **`.score-circle`** — Círculo de calificación con colores diferenciados para aprobado (verde) y reprobado (rojo).
+- **`.promedio-card`** — Tarjeta de promedio con fondo degradado condicional.
+- **`.cal-badge-aprobado` / `.cal-badge-reprobado`** — Insignias de estado de calificación con ícono.
+- **`.empty-state-alumno`** — Estado vacío con icono grande y mensaje centrado.
+
+### 6.5 Ajustes Transversales al Sistema
+
+- **`includes/sidebar.php`:** Se añadieron dos nuevos enlaces en el bloque "Mi Espacio" del alumno: **Mi Perfil** (icono `account_circle`) y **Mis Materias** (icono `menu_book`), además de los ya existentes Mi Horario y Mis Calificaciones.
+
+- **`includes/header.php`:** Se corrigió y amplió la lógica de carga de CSS por módulo. Se añadió un array `$modulos_alumno_css` con los valores `mi_perfil`, `mi_horario`, `mis_calificaciones`, `mis_materias` y `alumno` para que todos los submódulos del portal del alumno carguen correctamente `alumno.css` en lugar de buscar archivos CSS individuales inexistentes.
+
+- **`modulos/dashboard/logica.php`:** Se añadió una redirección automática al inicio del método `index()`: cuando el usuario autenticado tiene rol `alumno`, es redirigido inmediatamente a `alumno/perfil`, evitando que vea el dashboard administrativo.
+

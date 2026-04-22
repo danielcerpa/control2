@@ -19,7 +19,11 @@
   <?php
   // Cargar CSS específico por módulo si existe
   $modulos_css = array('alumnos', 'docentes', 'grupos', 'materias', 'horarios', 'calificaciones', 'usuarios', 'reportes', 'salones', 'ciclos');
-  if (isset($modulo_activo) && in_array($modulo_activo, $modulos_css)) {
+  // Módulos del portal alumno usan alumno.css
+  $modulos_alumno_css = array('mi_perfil', 'mi_horario', 'mis_calificaciones', 'mis_materias', 'alumno');
+  if (isset($modulo_activo) && in_array($modulo_activo, $modulos_alumno_css)) {
+    echo '  <link rel="stylesheet" href="' . BASE_URL . 'assets/css/alumno.css">' . "\n";
+  } elseif (isset($modulo_activo) && in_array($modulo_activo, $modulos_css)) {
     echo '  <link rel="stylesheet" href="' . BASE_URL . 'assets/css/' . $modulo_activo . '.css">' . "\n";
   }
   ?>

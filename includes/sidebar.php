@@ -92,8 +92,10 @@ function nav_link($modulo, $label, $icon, $url, $actual)
       <?php if ($rol === 'alumno'): ?>
         <p class="sidebar-heading">Mi Espacio</p>
         <ul class="nav flex-column">
+          <?php nav_link('mi_perfil', 'Mi Perfil', 'account_circle', BASE_URL . 'alumno/perfil', $activo); ?>
           <?php nav_link('mi_horario', 'Mi Horario', 'calendar_month', BASE_URL . 'alumno/horario', $activo); ?>
           <?php nav_link('mis_calificaciones', 'Mis Calificaciones', 'grade', BASE_URL . 'alumno/calificaciones', $activo); ?>
+          <?php nav_link('mis_materias', 'Mis Materias', 'menu_book', BASE_URL . 'alumno/materias', $activo); ?>
         </ul>
       <?php endif; ?>
     </div>

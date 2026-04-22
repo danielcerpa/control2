@@ -1,6 +1,6 @@
-CREATE DATABASE control_escolar;
+CREATE DATABASE control2;
 
-USE control_escolar;
+USE control2;
 
 -- tabla de usuarios, maneja el login de todos (alumnos, profes, director)
 CREATE TABLE usuarios (
@@ -46,7 +46,7 @@ CREATE TABLE grupos (
     ciclo_escolar VARCHAR(20),
     turno ENUM('MATUTINO', 'VESPERTINO') DEFAULT 'MATUTINO'
 );
---=========================================================================================
+-- =========================================================================================
 
 -- relaciona usuarios con modulos usando un perfil especifico
 CREATE TABLE permisos (
@@ -165,7 +165,7 @@ CREATE TABLE inscripciones (
     id_inscripcion BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_alumno BIGINT NOT NULL,
     id_materia BIGINT NOT NULL,
-    fecha_inscripcion DATE DEFAULT(CURRENT_DATE),
+    fecha_inscripcion DATE DEFAULT NULL,
     estado BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_alumno) REFERENCES alumnos (id_alumno),
     FOREIGN KEY (id_materia) REFERENCES materias (id_materia),
@@ -178,7 +178,7 @@ CREATE TABLE calificaciones (
     id_inscripcion BIGINT NOT NULL,
     etiqueta_periodo VARCHAR(50), -- el profe lo nombra como quiera: "Parcial 1", "Final", etc.
     puntaje DECIMAL(4, 2),
-    fecha_registro DATE DEFAULT(CURRENT_DATE),
+    fecha_registro DATE DEFAULT NULL,
     estado ENUM('ACTIVO', 'HISTORICO') DEFAULT 'ACTIVO',
     FOREIGN KEY (id_inscripcion) REFERENCES inscripciones (id_inscripcion)
 );
@@ -191,7 +191,7 @@ INSERT INTO
     )
 VALUES ('admin', '123', 1);
 
-USE control_escolar;
+USE control2;
 
 -- 1. Usuarios adicionales (Alumnos y Profesores)
 INSERT INTO
