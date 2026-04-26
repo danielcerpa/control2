@@ -30,7 +30,10 @@
                     Matrícula: <strong><?php echo e($alumno['matricula']); ?></strong> &nbsp;·&nbsp;
                 <?php endif; ?>
                 <?php if (!empty($alumno['genero'])): ?>
-                    <?php echo $alumno['genero'] === 'H' ? 'Hombre' : 'Mujer'; ?>
+                    <?php
+                        $genero_map = ['M' => 'Masculino', 'F' => 'Femenino', 'H' => 'Masculino', 'O' => 'Otro'];
+                        echo $genero_map[$alumno['genero']] ?? e($alumno['genero']);
+                    ?>
                 <?php endif; ?>
             </p>
             <span class="hero-badge">

@@ -49,3 +49,25 @@ function fmt_fecha($mysql_date)
     if (count($parts) < 3) return $mysql_date;
     return $parts[2] . '/' . $parts[1] . '/' . $parts[0];
 }
+
+// Retorna el ciclo escolar activo como array, o [] si no hay ninguno
+function ciclo_activo()
+{
+    static $ciclo = null;
+    if ($ciclo !== null) return $ciclo;
+
+    try {
+        $pdo = db_connect();
+        $st  = $pdo->prepare("SELECT id, nombre, fecha_inicio, fecha_fin, estado
+                               FROM ciclos_escolares
+                               WHERE estado = 'Activo'
+                               ORDER BY fecha_inicio DESC
+                               LIMIT 1");
+        $st->execute();
+        $ciclo = $st->fetch() ?: [];
+    } catch (Exception $e) {
+        $ciclo = [];
+    }
+
+    return $ciclo;
+}

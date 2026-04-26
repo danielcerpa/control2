@@ -20,7 +20,7 @@ class DashboardController extends Controller
 
 
         $mis_horarios_hoy = array();
-        if ($u['tipo'] === 'docente' || $u['rol'] === 'profesor') {
+        if ($u['tipo'] === 'profesor' || $u['rol'] === 'profesor' || $u['tipo'] === 'docente') {
             $dias_es = array(
                 'Monday'    => 'LUNES',
                 'Tuesday'   => 'MARTES',

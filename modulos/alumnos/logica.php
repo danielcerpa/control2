@@ -407,16 +407,30 @@ class AlumnosController extends Controller
 
         public function delete($id)
     {
+        $db = db_connect();
+
+        // Obtener id_usuario ANTES de borrar el alumno
+        $id_usuario = $this->alumnoModel->getUsuarioId($id);
+
+        $db->beginTransaction();
         try {
             $this->alumnoModel->delete($id);
-            redirect(BASE_URL . 'alumnos', 'Registro eliminado correctamente');
+
+            // Si el alumno tenía usuario de acceso, eliminarlo también
+            if ($id_usuario) {
+                $db->prepare("DELETE FROM usuarios WHERE id_usuario = ?")->execute([$id_usuario]);
+            }
+
+            $db->commit();
+            redirect(BASE_URL . 'alumnos', 'Alumno eliminado correctamente');
         } catch (PDOException $e) {
+            $db->rollBack();
             if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
                 $tabla = 'otro módulo';
                 if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
                     $tabla = $m[1];
                 }
-                redirect(BASE_URL . 'alumnos', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+                redirect(BASE_URL . 'alumnos', "No se puede eliminar porque tiene registros asociados en: $tabla", 'danger');
             }
             throw $e;
         }

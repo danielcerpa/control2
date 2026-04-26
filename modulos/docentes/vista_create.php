@@ -52,7 +52,7 @@
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Estado</label>
                             <select name="estado" class="form-control" style="border-radius:8px;">
-                                <option value="Activo" <?php if ($datos['estado'] === 'Activo') echo 'selected'; ?>>Activo</option>
+                                <option value="Activo"   <?php if ($datos['estado'] === 'Activo')   echo 'selected'; ?>>Activo</option>
                                 <option value="Inactivo" <?php if ($datos['estado'] === 'Inactivo') echo 'selected'; ?>>Inactivo</option>
                             </select>
                         </div>

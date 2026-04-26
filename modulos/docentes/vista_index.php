@@ -39,7 +39,7 @@
             <label class="small font-weight-bold text-secondary">Estado</label>
             <select name="estado" class="form-control">
                 <option value="">Todos</option>
-                <option value="Activo" <?php if ($filtros['estado'] === 'Activo')   echo 'selected'; ?>>Activo</option>
+                <option value="Activo"   <?php if ($filtros['estado'] === 'Activo')   echo 'selected'; ?>>Activo</option>
                 <option value="Inactivo" <?php if ($filtros['estado'] === 'Inactivo') echo 'selected'; ?>>Inactivo</option>
             </select>
         </div>
@@ -72,7 +72,6 @@
                         <th>CURP</th>
                         <th>Teléfono</th>
                         <th>Estado</th>
-
                     </tr>
                 </thead>
                 <tbody>
@@ -107,7 +106,6 @@
                             <td>
                                 <span class="badge badge-<?php echo $d['estado'] === 'Activo' ? 'success' : 'secondary'; ?>"><?php echo e($d['estado']); ?></span>
                             </td>
-
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -115,7 +113,6 @@
         </div>
     </div>
 </div>
-
 
 
 <?php include 'includes/footer.php'; ?>

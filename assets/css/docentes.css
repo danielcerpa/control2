@@ -1,10 +1,1 @@
-/* assets/css/docentes.css */
-.teacher-card { border-left: 4px solid #197fe6; }
-.specialty-tag {
-    background: #f1f5f9;
-    color: #475569;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    margin-right: 4px;
-}
+/* docentes.css — estilos específicos del módulo docentes */

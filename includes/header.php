@@ -70,7 +70,7 @@
               <div class="font-weight-bold" style="font-size: 0.9rem; line-height: 1.2; color:#0e141b;"><?php echo e($u['nombre']); ?></div>
               <div class="text-muted small" style="line-height: 1.2;">
                 <?php
-                $roles = ['director' => 'Director', 'admin' => 'Administrador', 'profesor' => 'Profesor', 'alumno' => 'Alumno'];
+                $roles = ['director' => 'Director', 'admin' => 'Administrador', 'profesor' => 'Docente', 'docente' => 'Docente', 'alumno' => 'Alumno'];
                 echo e($roles[$u['rol']] ?? $u['rol']);
                 ?>
               </div>

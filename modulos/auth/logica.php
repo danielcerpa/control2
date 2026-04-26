@@ -54,7 +54,7 @@ class AuthController extends Controller
                         $st = $pdo->prepare("SELECT id_profesor, nombre_completo, ruta_foto FROM profesores WHERE id_usuario = ?");
                         $st->execute([$user['id_usuario']]);
                         if ($profesor = $st->fetch()) {
-                            $tipo = 'docente';
+                            $tipo = 'profesor';
                             $_SESSION['usuario_entidad_id'] = $profesor['id_profesor'];
                             $nombre_completo = $profesor['nombre_completo'];
                             $foto = $profesor['ruta_foto'];

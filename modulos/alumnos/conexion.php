@@ -73,6 +73,14 @@ class Alumno
         ));
     }
 
+    public function getUsuarioId($alumno_id)
+    {
+        $st = $this->db->prepare("SELECT id_usuario FROM alumnos WHERE id_alumno = ? LIMIT 1");
+        $st->execute([$alumno_id]);
+        $row = $st->fetch();
+        return $row ? $row['id_usuario'] : null;
+    }
+
     public function delete($id)
     {
         $st = $this->db->prepare("DELETE FROM alumnos WHERE id_alumno = ?");
