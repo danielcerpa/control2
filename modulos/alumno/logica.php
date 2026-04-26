@@ -93,10 +93,10 @@ class AlumnoController extends Controller
         $alumno_id  = $this->getAlumnoId();
 
         $grupo_id = $alumno_id ? $this->portalModel->getGrupoId($alumno_id, $ciclo['id'] ?? null) : null;
-        $horarios  = $grupo_id ? $this->portalModel->getHorario($grupo_id, $ciclo['id'] ?? null) : [];
+        $horarios = $alumno_id ? $this->portalModel->getHorarioByAlumno($alumno_id, $ciclo['id'] ?? null) : [];
 
         // Organizar por día
-        $dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
+        $dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
         $grid = [];
         foreach ($dias as $d) $grid[$d] = [];
         foreach ($horarios as $h) {

@@ -7,11 +7,13 @@
     </ol>
 </nav>
 
+<?php $u = session_user(); $isDocente = ($u['rol'] === 'profesor'); ?>
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
-        <h1><span class="material-symbols-outlined mr-2" style="font-size:28px;">menu_book</span>Materias</h1>
-        <p>Catálogo de materias del plantel</p>
+        <h1><span class="material-symbols-outlined mr-2" style="font-size:28px;">menu_book</span><?php echo $isDocente ? 'Mis Materias' : 'Materias'; ?></h1>
+        <p><?php echo $isDocente ? 'Materias que tienes asignadas' : 'Catálogo de materias del plantel'; ?></p>
     </div>
+    <?php if (!$isDocente): ?>
     <div class="d-flex">
         <a href="<?php echo BASE_URL; ?>materias/search_delete" class="btn btn-outline-danger mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
             <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">delete</span> Borrar Materia
@@ -23,6 +25,7 @@
             <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">add_box</span> Nueva Materia
         </a>
     </div>
+    <?php endif; ?>
 </div>
 
 <!-- Filtros -->
@@ -68,9 +71,14 @@
                 <thead>
                     <tr class="text-uppercase" style="font-size:11px; letter-spacing:1px;">
                         <th class="pl-4">Nombre de Materia</th>
-                        <th>Horario</th>
-                        <th>Cupo</th>
-                        <th>Ciclo Escolar</th>
+                        <?php if ($isDocente): ?>
+                            <th>Grupo</th>
+                            <th>Salón</th>
+                        <?php else: ?>
+                            <th>Horario</th>
+                            <th>Cupo</th>
+                            <th>Ciclo Escolar</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,20 +93,25 @@
                     <?php foreach ($materias as $m): ?>
                         <tr>
                             <td class="pl-4 font-weight-bold" style="color:#197fe6;"><?php echo e($m['nombre']); ?></td>
-                            <td>
-                                <?php if (!empty($m['horarios'])): ?>
-                                    <?php foreach($m['horarios'] as $h): ?>
-                                        <span class="badge badge-light border d-block mb-1 text-left shadow-sm" style="font-size:12px; padding:6px 10px; border-radius:6px; background:#f8fafc;">
-                                            <span class="material-symbols-outlined mr-1 text-primary" style="font-size:14px; vertical-align:-3px;">event</span>
-                                            <strong style="color:#334155;"><?php echo htmlspecialchars($h['dia']); ?></strong>: <?php echo htmlspecialchars(substr($h['hora_inicio'],0,5)) . '-' . htmlspecialchars(substr($h['hora_fin'],0,5)); ?>hrs
-                                        </span>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <span class="text-muted small font-italic"><span class="material-symbols-outlined mr-1" style="font-size:14px; vertical-align:-3px;">schedule_info</span>Sin impartición</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><span class="badge" style="background:#f1f5f9; color:#475569; font-weight:500;"><?php echo e($m['cupo_maximo'] ?: 'N/A'); ?></span></td>
-                            <td><?php echo e($m['ciclo_escolar'] ?: '—'); ?></td>
+                            <?php if ($isDocente): ?>
+                                <td><span class="badge" style="background:#f1f5f9; color:#475569; font-weight:500;"><?php echo e($grupos_map[$m['id_grupo']] ?? 'Sin grupo'); ?></span></td>
+                                <td><span class="text-muted"><span class="material-symbols-outlined mr-1" style="font-size:14px; vertical-align:-3px;">meeting_room</span><?php echo e($salones_map[$m['id_salon']] ?? 'Sin salón'); ?></span></td>
+                            <?php else: ?>
+                                <td>
+                                    <?php if (!empty($m['horarios'])): ?>
+                                        <?php foreach($m['horarios'] as $h): ?>
+                                            <span class="badge badge-light border d-block mb-1 text-left shadow-sm" style="font-size:12px; padding:6px 10px; border-radius:6px; background:#f8fafc;">
+                                                <span class="material-symbols-outlined mr-1 text-primary" style="font-size:14px; vertical-align:-3px;">event</span>
+                                                <strong style="color:#334155;"><?php echo htmlspecialchars($h['dia']); ?></strong>: <?php echo htmlspecialchars(substr($h['hora_inicio'],0,5)) . '-' . htmlspecialchars(substr($h['hora_fin'],0,5)); ?>hrs
+                                            </span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-muted small font-italic"><span class="material-symbols-outlined mr-1" style="font-size:14px; vertical-align:-3px;">schedule_info</span>Sin impartición</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><span class="badge" style="background:#f1f5f9; color:#475569; font-weight:500;"><?php echo e($m['cupo_maximo'] ?: 'N/A'); ?></span></td>
+                                <td><?php echo e($ciclos_map[$m['ciclo_escolar']] ?? ($m['ciclo_escolar'] ?: '—')); ?></td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

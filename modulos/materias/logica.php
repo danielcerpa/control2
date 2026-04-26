@@ -26,7 +26,14 @@ class MateriasController extends Controller
             'estado' => isset($_GET['estado']) ? trim($_GET['estado']) : '',
         ];
 
+        $u = session_user();
         $materias = $this->materiaModel->getAll();
+        
+        if ($u['rol'] === 'profesor' && $u['entidad_id']) {
+            $materias = array_filter($materias, function ($m) use ($u) {
+                return $m['id_profesor'] == $u['entidad_id'];
+            });
+        }
 
         if ($filtros['q']) {
             $q = strtolower($filtros['q']);
@@ -42,9 +49,27 @@ class MateriasController extends Controller
             });
         }
 
+        $ciclos_map = [];
+        foreach ($this->cicloModel->getAll() as $c) {
+            $ciclos_map[$c['id']] = $c['nombre'];
+        }
+
+        $grupos_map = [];
+        foreach ($this->grupoModel->getAll() as $g) {
+            $grupos_map[$g['id_grupo']] = $g['nombre'];
+        }
+
+        $salones_map = [];
+        foreach ($this->salonModel->getAll() as $s) {
+            $salones_map[$s['id_salon']] = $s['nombre'];
+        }
+
         $this->view('materias/index', [
-            'materias' => $materias,
-            'filtros'  => $filtros,
+            'materias'   => $materias,
+            'filtros'    => $filtros,
+            'ciclos_map' => $ciclos_map,
+            'grupos_map' => $grupos_map,
+            'salones_map'=> $salones_map,
         ]);
     }
 

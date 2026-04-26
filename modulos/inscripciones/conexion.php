@@ -13,7 +13,7 @@ class Inscripcion
     public function getAll()
     {
         $st = $this->db->query(
-            "SELECT i.*, a.matricula, a.nombre, a.apellido_paterno, m.dia, m.hora_inicio, m.nombre AS materia
+            "SELECT i.*, a.matricula, a.nombre, a.apellido_paterno, m.nombre AS materia
              FROM inscripciones i
              JOIN alumnos a ON i.id_alumno = a.id_alumno
              JOIN materias m ON i.id_materia = m.id_materia

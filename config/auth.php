@@ -29,6 +29,7 @@ function session_user()
         'permisos' => isset($_SESSION['usuario_permisos']) ? $_SESSION['usuario_permisos'] : array(),
         'tipo'    => $_SESSION['usuario_tipo'] ?? $_SESSION['usuario_rol'],
         'foto'    => $_SESSION['usuario_foto'] ?? null,
+        'entidad_id' => $_SESSION['usuario_entidad_id'] ?? null,
     );
 }
 

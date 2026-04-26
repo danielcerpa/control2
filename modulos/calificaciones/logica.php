@@ -21,15 +21,37 @@ class CalificacionesController extends Controller
 
     public function index()
     {
+        $u = session_user();
         $ciclo        = $this->cicloModel->getActivo();
         $grupos       = $this->grupoModel->getAll();
         $filtro_grupo  = (int) ($_GET['grupo']   ?? 0);
         $filtro_materia = (int) ($_GET['materia'] ?? 0);
 
+        // Filter groups for profesor
+        if ($u['rol'] === 'profesor' && $u['entidad_id']) {
+            $materias_profesor = $this->materiaModel->getAll();
+            $grupos_profesor_ids = [];
+            foreach ($materias_profesor as $m) {
+                if ($m['id_profesor'] == $u['entidad_id'] && $m['id_grupo']) {
+                    $grupos_profesor_ids[] = $m['id_grupo'];
+                }
+            }
+            $grupos = array_filter($grupos, function ($g) use ($grupos_profesor_ids) {
+                return in_array($g['id_grupo'], $grupos_profesor_ids);
+            });
+        }
+
         // Cargar materias filtradas por grupo (si hay grupo seleccionado)
         $materias = $filtro_grupo
             ? $this->materiaModel->getByGrupo($filtro_grupo)
             : [];
+
+        // Filter materias for profesor
+        if ($u['rol'] === 'profesor' && $u['entidad_id']) {
+            $materias = array_filter($materias, function ($m) use ($u) {
+                return $m['id_profesor'] == $u['entidad_id'];
+            });
+        }
 
         // Cargar alumnos con calificaciones si hay grupo y materia
         $alumnos = [];

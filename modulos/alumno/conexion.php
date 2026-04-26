@@ -94,6 +94,28 @@ class AlumnoPortal
     }
 
     /**
+     * Retorna el horario basado en las materias inscritas del alumno.
+     */
+    public function getHorarioByAlumno($alumno_id, $ciclo_id)
+    {
+        $st = $this->db->prepare(
+            "SELECT m.id_materia, m.nombre AS materia,
+                    mh.dia, mh.hora_inicio, mh.hora_fin,
+                    p.nombre_completo AS docente,
+                    s.nombre AS salon
+               FROM inscripciones i
+               JOIN materias m ON i.id_materia = m.id_materia
+               JOIN materia_horarios mh ON mh.id_materia = m.id_materia
+               LEFT JOIN profesores p ON p.id_profesor = m.id_profesor
+               LEFT JOIN salones s ON s.id_salon = m.id_salon
+              WHERE i.id_alumno = ? AND i.estado = 1
+              ORDER BY FIELD(mh.dia,'LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'), mh.hora_inicio"
+        );
+        $st->execute([$alumno_id]);
+        return $st->fetchAll();
+    }
+
+    /**
      * Retorna las calificaciones del alumno en el ciclo activo.
      */
     public function getCalificaciones($alumno_id, $ciclo_id)

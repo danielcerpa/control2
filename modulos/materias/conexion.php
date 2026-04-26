@@ -81,7 +81,17 @@ class Materia
             $datos['grupo_id']   ?: null,
             $datos['ciclo_id']    ?: null,
         ]);
-        return $this->db->lastInsertId();
+        $id_materia = $this->db->lastInsertId();
+
+        if (!empty($datos['grupo_id'])) {
+            $st_ins = $this->db->prepare(
+                "INSERT IGNORE INTO inscripciones (id_alumno, id_materia, estado, fecha_inscripcion) 
+                 SELECT id_alumno, ?, 1, NOW() FROM alumno_grupo WHERE id_grupo = ?"
+            );
+            $st_ins->execute([$id_materia, $datos['grupo_id']]);
+        }
+
+        return $id_materia;
     }
 
     public function update($id, $datos)
@@ -90,7 +100,7 @@ class Materia
             "UPDATE materias SET nombre=?, cupo_maximo=?, vigencia_inicio=?, vigencia_fin=?, id_profesor=?, id_salon=?, id_grupo=?, ciclo_escolar=?
              WHERE id_materia=?"
         );
-        return $st->execute([
+        $result = $st->execute([
             $datos['nombre'],
             $datos['horas'] ?? ($datos['cupo_maximo'] ?? 0),
             $datos['vigencia_inicio'] ?? null,
@@ -101,10 +111,33 @@ class Materia
             $datos['ciclo_id']    ?: null,
             $id
         ]);
+
+        if ($result && !empty($datos['grupo_id'])) {
+            $st_ins = $this->db->prepare(
+                "INSERT IGNORE INTO inscripciones (id_alumno, id_materia, estado, fecha_inscripcion) 
+                 SELECT id_alumno, ?, 1, NOW() FROM alumno_grupo WHERE id_grupo = ?"
+            );
+            $st_ins->execute([$id, $datos['grupo_id']]);
+        }
+
+        return $result;
     }
 
     public function delete($id)
     {
+        // 1. Eliminar calificaciones de las inscripciones de esta materia
+        $st_cal = $this->db->prepare("DELETE c FROM calificaciones c JOIN inscripciones i ON c.id_inscripcion = i.id_inscripcion WHERE i.id_materia = ?");
+        $st_cal->execute([$id]);
+
+        // 2. Eliminar inscripciones a esta materia
+        $st_ins = $this->db->prepare("DELETE FROM inscripciones WHERE id_materia = ?");
+        $st_ins->execute([$id]);
+
+        // 3. Eliminar asignaciones a profesores
+        $st_pm = $this->db->prepare("DELETE FROM profesor_materia WHERE id_materia = ?");
+        $st_pm->execute([$id]);
+
+        // 4. Eliminar la materia (los horarios se borran solos por el ON DELETE CASCADE de la BD)
         $st = $this->db->prepare("DELETE FROM materias WHERE id_materia = ?");
         return $st->execute([$id]);
     }

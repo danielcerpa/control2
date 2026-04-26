@@ -15,7 +15,26 @@ class GruposController extends Controller
 
     public function index()
     {
+        $u = session_user();
         $grupos = $this->grupoModel->getAll();
+        
+        if ($u['rol'] === 'profesor' && $u['entidad_id']) {
+            require_once 'modulos/materias/conexion.php';
+            $materiaModel = new Materia();
+            $materias_profesor = $materiaModel->getAll();
+            $grupos_profesor_ids = [];
+            
+            foreach ($materias_profesor as $m) {
+                if ($m['id_profesor'] == $u['entidad_id'] && $m['id_grupo']) {
+                    $grupos_profesor_ids[] = $m['id_grupo'];
+                }
+            }
+            
+            $grupos = array_filter($grupos, function ($g) use ($grupos_profesor_ids) {
+                return in_array($g['id_grupo'], $grupos_profesor_ids);
+            });
+        }
+
         $this->view('grupos/index', ['grupos' => $grupos]);
     }
 

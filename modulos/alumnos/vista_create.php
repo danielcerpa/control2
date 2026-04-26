@@ -110,8 +110,8 @@
                         <select name="grupo_id" class="form-control" style="border-radius:8px;">
                             <option value="">Sin asignar</option>
                             <?php foreach ($grupos as $g): ?>
-                                <option value="<?php echo $g['id_alumno']; ?>" <?php if ($datos['grupo_id'] == $g['id_alumno']) echo 'selected'; ?>>
-                                    <?php echo e($g['nombre']); ?>
+                                <option value="<?php echo $g['id_grupo']; ?>" <?php if ($datos['grupo_id'] == $g['id_grupo']) echo 'selected'; ?>>
+                                    <?php echo e($g['grado'] . '° ' . $g['seccion'] . ' — ' . ucfirst(strtolower($g['turno']))); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

@@ -71,14 +71,15 @@ foreach ($horarios_plano as $f) {
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>dashboard"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">home</span></a></li>
-        <li class="breadcrumb-item active">Mi Horario</li>
+        <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>horarios">Horarios</a></li>
+        <li class="breadcrumb-item active">Horario de <?php echo e($alumno['nombre']); ?></li>
     </ol>
 </nav>
 
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
-        <h1><span class="material-symbols-outlined mr-2" style="font-size:28px; color:#4338ca;">calendar_today</span>Mi Horario Escolar</h1>
-        <p>Clases programadas para el ciclo: <strong><?php echo e($ciclo['nombre']); ?></strong></p>
+        <h1><span class="material-symbols-outlined mr-2" style="font-size:28px; color:#4338ca;">calendar_today</span>Horario del Alumno</h1>
+        <p><?php echo e($alumno['nombre'] . ' ' . $alumno['apellido_paterno'] . ' ' . $alumno['apellido_materno']); ?> &mdash; Matrícula: <strong><?php echo e($alumno['matricula']); ?></strong></p>
     </div>
     <button onclick="window.print()" class="btn btn-outline-primary d-none d-md-flex align-items-center" style="border-radius:8px;">
         <span class="material-symbols-outlined mr-1" style="font-size:20px;">print</span> Imprimir

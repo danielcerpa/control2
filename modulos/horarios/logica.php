@@ -35,6 +35,40 @@ class HorariosController extends Controller
         $alumnos = $this->horarioModel->getAlumnos();
         $grupos  = $this->grupoModel->getAll();
 
+        if ($u['rol'] === 'profesor' && $u['entidad_id']) {
+            require_once 'modulos/materias/conexion.php';
+            require_once 'modulos/inscripciones/conexion.php';
+            $materiaModel = new Materia();
+            $inscripcionModel = new Inscripcion();
+            
+            // Get materias of this profesor
+            $materias_profesor = array_filter($materiaModel->getAll(), function($m) use ($u) {
+                return $m['id_profesor'] == $u['entidad_id'];
+            });
+            $ids_materias_prof = array_column($materias_profesor, 'id_materia');
+            
+            // Get inscripciones for these materias
+            $inscripciones = $inscripcionModel->getAll();
+            $ids_alumnos_prof = [];
+            foreach ($inscripciones as $insc) {
+                if (in_array($insc['id_materia'], $ids_materias_prof)) {
+                    $ids_alumnos_prof[] = $insc['id_alumno'];
+                }
+            }
+            $ids_alumnos_prof = array_unique($ids_alumnos_prof);
+            
+            // Filter alumnos
+            $alumnos = array_filter($alumnos, function($a) use ($ids_alumnos_prof) {
+                return in_array($a['id_alumno'], $ids_alumnos_prof);
+            });
+            
+            // Filter grupos
+            $grupos_profesor_ids = array_column($materias_profesor, 'id_grupo');
+            $grupos = array_filter($grupos, function($g) use ($grupos_profesor_ids) {
+                return in_array($g['id_grupo'], $grupos_profesor_ids);
+            });
+        }
+
         // Filtrar en PHP
         if ($filtros['q']) {
             $q = strtolower($filtros['q']);
@@ -216,7 +250,42 @@ class HorariosController extends Controller
         ]);
     }
 
-        public function delete($id)
+    public function show($id_alumno)
+    {
+        $ciclo = $this->cicloModel->getActivo();
+        require_once 'modulos/alumno/conexion.php';
+        $portalModel = new AlumnoPortal();
+
+        $alumno = $portalModel->getAlumno($id_alumno);
+        if (!$alumno) {
+            header('Location: ' . BASE_URL . 'horarios');
+            exit;
+        }
+
+        $grupo_id = $portalModel->getGrupoId($id_alumno, $ciclo['id'] ?? null);
+        $horarios = $portalModel->getHorarioByAlumno($id_alumno, $ciclo['id'] ?? null);
+
+        // Organizar por día
+        $dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+        $grid = [];
+        foreach ($dias as $d) $grid[$d] = [];
+        foreach ($horarios as $h) {
+            $dia_norm = ucfirst(strtolower($h['dia']));
+            if (isset($grid[$dia_norm])) {
+                $grid[$dia_norm][] = $h;
+            }
+        }
+
+        $this->view('horarios/show', [
+            'alumno'        => $alumno,
+            'grid'          => $grid,
+            'dias'          => $dias,
+            'ciclo'         => $ciclo,
+            'grupo_id'      => $grupo_id,
+        ]);
+    }
+
+    public function delete($id)
     {
         try {
             $this->horarioModel->delete($id);

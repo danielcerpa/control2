@@ -4,11 +4,14 @@
 class AlumnosController extends Controller
 {
     private $alumnoModel;
+    private $grupoModel;
 
     public function __construct()
     {
         require_auth();
         $this->alumnoModel = new Alumno();
+        require_once 'modulos/grupos/conexion.php';
+        $this->grupoModel = new Grupo();
     }
 
     public function index()
@@ -174,7 +177,7 @@ class AlumnosController extends Controller
                 return $this->view('alumnos/create', [
                     'modulo_activo' => $modulo_activo, 
                     'datos' => $datos_vista, 
-                    'grupos' => [], 
+                    'grupos' => $this->grupoModel->getAll(), 
                     'errors' => $errors
                 ]);
             }
@@ -241,11 +244,10 @@ class AlumnosController extends Controller
                     }
                     // Prevenir crash, volver al formulario con error sutil
                     $modulo_activo = 'alumnos';
-                    $grupos = []; 
                     return $this->view('alumnos/create', [
                         'modulo_activo' => $modulo_activo, 
                         'datos' => $datos_vista, 
-                        'grupos' => $grupos, 
+                        'grupos' => $this->grupoModel->getAll(), 
                         'errors' => ['matricula' => $error_msg]
                     ]);
                 }
@@ -253,8 +255,7 @@ class AlumnosController extends Controller
             }
         }
         $modulo_activo = 'alumnos';
-        $grupos = []; // TODO: Cargar grupos reales del modelo cuando exista
-        $this->view('alumnos/create', ['modulo_activo' => $modulo_activo, 'datos' => $datos, 'grupos' => $grupos, 'errors' => []]);
+        $this->view('alumnos/create', ['modulo_activo' => $modulo_activo, 'datos' => $datos, 'grupos' => $this->grupoModel->getAll(), 'errors' => []]);
     }
 
     public function edit($id)
@@ -332,7 +333,7 @@ class AlumnosController extends Controller
                     return $this->view('alumnos/edit', [
                         'modulo_activo' => $modulo_activo, 
                         'datos' => $datos_vista, 
-                        'grupos' => [], 
+                        'grupos' => $this->grupoModel->getAll(), 
                         'errors' => ['password' => 'Las contraseñas no coinciden.']
                     ]);
                 }
@@ -346,7 +347,7 @@ class AlumnosController extends Controller
                     return $this->view('alumnos/edit', [
                         'modulo_activo' => $modulo_activo, 
                         'datos' => $datos_vista, 
-                        'grupos' => [], 
+                        'grupos' => $this->grupoModel->getAll(), 
                         'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
                     ]);
                 }
@@ -383,7 +384,7 @@ class AlumnosController extends Controller
                     return $this->view('alumnos/edit', [
                         'modulo_activo' => $modulo_activo, 
                         'datos' => $datos_vista, 
-                        'grupos' => [], 
+                        'grupos' => $this->grupoModel->getAll(), 
                         'errors' => ['matricula' => $error_msg]
                     ]);
                 }
@@ -402,7 +403,7 @@ class AlumnosController extends Controller
             if ($alumno['genero'] == 'O') $alumno['genero'] = 'Otro';
         }
         $modulo_activo = 'alumnos';
-        $this->view('alumnos/edit', ['datos' => $alumno, 'grupos' => [], 'modulo_activo' => $modulo_activo, 'errors' => []]);
+        $this->view('alumnos/edit', ['datos' => $alumno, 'grupos' => $this->grupoModel->getAll(), 'modulo_activo' => $modulo_activo, 'errors' => []]);
     }
 
         public function delete($id)
