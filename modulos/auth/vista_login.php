@@ -7,15 +7,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Acceso al Sistema — Control Escolar</title>
 
+    <script>
+        // Cargar y aplicar tema guardado antes de renderizar
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/fonts.css">
 
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/bootstrap-icons.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/app.css?v=<?php echo filemtime(dirname(__FILE__) . '/../../assets/css/app.css'); ?>">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/login.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/login.css?v=<?php echo filemtime(dirname(__FILE__) . '/../../assets/css/login.css'); ?>">
 </head>
 
 <body class="login-page">
+
+    <!-- Botón flotante para Modo Oscuro en Login -->
+    <button id="btn-dark-mode-login" class="btn d-flex align-items-center justify-content-center" 
+            type="button" 
+            style="position: fixed; top: 20px; right: 20px; width: 44px; height: 44px; border: 1px solid #cbd5e1; background: #fff; border-radius: 50%; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.2s;">
+        <span id="dm-icon" class="material-symbols-outlined" style="font-size: 22px; color: #475569;">dark_mode</span>
+    </button>
 
     <div class="login-container">
         <div class="login-card fade-in">
@@ -64,6 +78,41 @@
 
     <script src="<?php echo BASE_URL; ?>assets/js/jquery.min.js"></script>
     <script src="<?php echo BASE_URL; ?>assets/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    (function () {
+      var btn  = document.getElementById('btn-dark-mode-login');
+      var icon = document.getElementById('dm-icon');
+    
+      function updateIcon(dark) {
+        if (dark) {
+          icon.textContent = 'light_mode';
+          icon.style.color = '#fbbf24'; // Sol amarillo
+        } else {
+          icon.textContent = 'dark_mode';
+          icon.style.color = '#475569'; // Media luna gris
+        }
+      }
+    
+      // Inicializar estado del icono según el tema actual
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      updateIcon(isDark);
+    
+      btn.addEventListener('click', function () {
+        var currentDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var nextDark    = !currentDark;
+    
+        if (nextDark) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        }
+        updateIcon(nextDark);
+      });
+    })();
+    </script>
 </body>
 
 </html>

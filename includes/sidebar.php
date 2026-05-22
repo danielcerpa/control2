@@ -115,40 +115,41 @@ function nav_link(string $modulo, string $label, string $icon, string $url, stri
     </div>
 
     <!-- FOOTER DEL SIDEBAR — siempre al fondo -->
-    <div class="sidebar-footer dropup d-flex justify-content-center py-3">
-      <button class="btn btn-action d-flex align-items-center justify-content-center" 
+    <div class="sidebar-footer d-flex justify-content-end align-items-center py-3 px-4">
+      
+      <!-- Botón de Modo Oscuro (Luna / Sol) visible directamente -->
+      <button class="btn btn-action d-flex align-items-center justify-content-center mr-2" 
               type="button" 
-              id="sidebarConfigDropdown" 
-              data-toggle="dropdown" 
-              aria-haspopup="true" 
-              aria-expanded="false" 
-              style="width: 40px; height: 40px; border: 1px solid #cbd5e1; background: transparent; transition: all 0.2s; border-radius: 8px;">
-        <span class="material-symbols-outlined" style="font-size: 22px;">settings</span>
+              id="btn-sidebar-theme-toggle" 
+              style="width: 40px; height: 40px; border: 1px solid #cbd5e1; background: transparent; transition: all 0.2s; border-radius: 8px;"
+              title="Cambiar tema">
+        <span id="sidebar-theme-icon" class="material-symbols-outlined" style="font-size: 22px;">dark_mode</span>
       </button>
-      <div class="dropdown-menu shadow-sm py-2" 
-           aria-labelledby="sidebarConfigDropdown" 
-           style="border-radius: 10px; min-width: 220px; z-index: 1050; margin-bottom: 8px;">
-        
-        <?php if ($rol === 'admin' || $rol === 'director'): ?>
-          <a class="dropdown-item d-flex align-items-center py-2" href="<?php echo BASE_URL; ?>configuracion">
-            <span class="material-symbols-outlined mr-2" style="font-size: 20px;">domain</span>
-            <span>Datos de la Institución</span>
-          </a>
-          <div class="dropdown-divider"></div>
-        <?php endif; ?>
 
-        <!-- Toggle de Modo Oscuro -->
-        <button class="dropdown-item d-flex align-items-center justify-content-between py-2" type="button" id="btn-dark-mode" style="border: none; background: transparent; font-size: 0.875rem; width: 100%;">
-          <span class="d-flex align-items-center">
-            <span id="dm-icon" class="material-symbols-outlined mr-2" style="font-size: 20px;">dark_mode</span>
-            <span id="dm-label">Tema Oscuro</span>
-          </span>
-          <span id="dm-indicator" style="width:28px; height:16px; border-radius:8px; background:#cbd5e1; position:relative; flex-shrink:0; transition:background 0.2s; margin-left: 12px;">
-            <span id="dm-knob" style="position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left 0.2s;"></span>
-          </span>
-        </button>
+      <!-- Botón de Configuración (Tuerca) — Solo Administrador y Director -->
+      <?php if ($rol === 'admin' || $rol === 'director'): ?>
+        <div class="dropup">
+          <button class="btn btn-action d-flex align-items-center justify-content-center" 
+                  type="button" 
+                  id="sidebarConfigDropdown" 
+                  data-toggle="dropdown" 
+                  aria-haspopup="true" 
+                  aria-expanded="false" 
+                  style="width: 40px; height: 40px; border: 1px solid #cbd5e1; background: transparent; transition: all 0.2s; border-radius: 8px;"
+                  title="Configuración">
+            <span class="material-symbols-outlined" style="font-size: 22px;">settings</span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-right shadow-sm py-2" 
+               aria-labelledby="sidebarConfigDropdown" 
+               style="border-radius: 10px; min-width: 200px; z-index: 1050; margin-bottom: 8px;">
+            <a class="dropdown-item d-flex align-items-center py-2" href="<?php echo BASE_URL; ?>configuracion">
+              <span class="material-symbols-outlined mr-2" style="font-size: 20px;">domain</span>
+              <span>Datos de la Institución</span>
+            </a>
+          </div>
+        </div>
+      <?php endif; ?>
 
-      </div>
     </div>
 
   </div>
@@ -156,19 +157,22 @@ function nav_link(string $modulo, string $label, string $icon, string $url, stri
 
 <script>
 (function () {
-  var btn       = document.getElementById('btn-dark-mode');
-  var indicator = document.getElementById('dm-indicator');
-  var knob      = document.getElementById('dm-knob');
+  var btn  = document.getElementById('btn-sidebar-theme-toggle');
+  var icon = document.getElementById('sidebar-theme-icon');
 
   function applyTheme(dark) {
     if (dark) {
       document.documentElement.setAttribute('data-theme', 'dark');
-      indicator.style.background = '#2563eb';
-      knob.style.left = '14px';
+      if (icon) {
+        icon.textContent = 'light_mode';
+        icon.style.color = '#fbbf24'; // Sol amarillo
+      }
     } else {
       document.documentElement.removeAttribute('data-theme');
-      indicator.style.background = '#cbd5e1';
-      knob.style.left = '2px';
+      if (icon) {
+        icon.textContent = 'dark_mode';
+        icon.style.color = ''; // Color de texto normal de la UI
+      }
     }
   }
 
@@ -176,11 +180,13 @@ function nav_link(string $modulo, string $label, string $icon, string $url, stri
   var saved = localStorage.getItem('theme') === 'dark';
   applyTheme(saved);
 
-  btn.addEventListener('click', function () {
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var next   = !isDark;
-    localStorage.setItem('theme', next ? 'dark' : 'light');
-    applyTheme(next);
-  });
+  if (btn) {
+    btn.addEventListener('click', function () {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next   = !isDark;
+      localStorage.setItem('theme', next ? 'dark' : 'light');
+      applyTheme(next);
+    });
+  }
 })();
 </script>

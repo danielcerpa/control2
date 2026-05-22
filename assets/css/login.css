@@ -199,3 +199,63 @@ body.login-page {
 .delay-3 {
   animation-delay: 0.3s;
 }
+
+/* ============================================================
+   DARK MODE FOR LOGIN — data-theme="dark" on <html>
+   ============================================================ */
+[data-theme="dark"] body.login-page {
+  background: #030303;
+  color: #f4f4f5;
+}
+
+[data-theme="dark"] .login-card {
+  background: rgba(15, 15, 17, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .login-header-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 17, 1) 0%,
+    rgba(15, 15, 17, 0) 100%
+  ) !important;
+}
+
+[data-theme="dark"] .brand-icon {
+  background: #18181b !important;
+  color: #3b82f6 !important;
+  border: 1px solid #27272a !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .login-title {
+  color: #f4f4f5 !important;
+}
+
+[data-theme="dark"] .form-group label {
+  color: #a1a1aa !important;
+}
+
+[data-theme="dark"] .form-control {
+  background-color: #0f0f11 !important;
+  border-color: #222226 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .form-control:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+}
+
+[data-theme="dark"] #btn-dark-mode-login {
+  background-color: #0f0f11 !important;
+  border-color: #222226 !important;
+  color: #a1a1aa !important;
+}
+
+[data-theme="dark"] #btn-dark-mode-login:hover {
+  background-color: #18181b !important;
+  color: #ffffff !important;
+}
+

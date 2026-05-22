@@ -129,23 +129,25 @@ $(document).ready(function () {
     }
   }
 
-  /* ── Huella Digital Oculta (Firma de Autoría) ─── */
-  $(document).on("keydown", function (e) {
-    // Atajo: Ctrl + Shift + Alt + U
-    if (e.ctrlKey && e.shiftKey && e.altKey && e.key.toLowerCase() === 'u') {
-      console.clear();
-      console.log(
-        "%c🔒 VERIFICACIÓN DE AUTORÍA %c\n\nEste sistema escolar fue desarrollado por:\n👉 Daniel Cerpa\n👉 Emilio González Grana\n👉 Colaboradores de Proyecto\n\nID de Seguridad: %c[SHA-256: 9f7b6aceb52147af85e758c3767e20d0]%c\nFecha de Compilación: Mayo 2026\nTodos los derechos reservados. Uso académico exclusivo.",
-        "background: #1e3a8a; color: #fff; padding: 8px 16px; border-radius: 4px; font-weight: bold; font-size: 16px; font-family: system-ui;",
-        "color: #1e293b; font-size: 13px; font-family: monospace; line-height: 1.6;",
-        "color: #b91c1c; font-weight: bold; font-family: monospace;",
-        "color: #1e293b;"
-      );
-      alert("=========================================\n🔒 VERIFICACIÓN DE SEGURIDAD DEL SISTEMA\n=========================================\n\nCódigo Fuente Original por:\n- Daniel Cerpa & Emilio González Grana\n\nFirma Digital de Autoría Verificada.\nID: 9F7B6ACEB52147AF.");
-    }
-  });
-
   // Marca silenciosa discreta en consola al cargar
   console.log("%cSystem loaded. Cryptographic signature active.", "color: #94a3b8; font-size: 9px; font-style: italic;");
 });
+
+/* ── Huella Digital Oculta (Firma de Autoría) ─── */
+window.addEventListener("keydown", function (e) {
+  // Atajo: Ctrl + Shift + Alt + U (Código 85)
+  var isU = e.key ? (e.key.toLowerCase() === 'u') : ((e.which || e.keyCode) === 85);
+  if (e.ctrlKey && e.shiftKey && e.altKey && isU) {
+    console.clear();
+    console.log(
+      "%c🔒 VERIFICACIÓN DE AUTORÍA %c\n\nEste sistema escolar fue desarrollado por:\n👉 Daniel Cerpa\n👉 Emilio González Grana\n👉 Colaboradores de Proyecto\n\nID de Seguridad: %c[SHA-256: 9f7b6aceb52147af85e758c3767e20d0]%c\nFecha de Compilación: Mayo 2026\nTodos los derechos reservados. Uso académico exclusivo.",
+      "background: #1e3a8a; color: #fff; padding: 8px 16px; border-radius: 4px; font-weight: bold; font-size: 16px; font-family: system-ui;",
+      "color: #1e293b; font-size: 13px; font-family: monospace; line-height: 1.6;",
+      "color: #b91c1c; font-weight: bold; font-family: monospace;",
+      "color: #1e293b;"
+    );
+    alert("=========================================\n🔒 VERIFICACIÓN DE SEGURIDAD DEL SISTEMA\n=========================================\n\nCódigo Fuente Original por:\n- Daniel Cerpa & Emilio González Grana\n\nFirma Digital de Autoría Verificada.\nID: 9F7B6ACEB52147AF.");
+  }
+}, true);
+
 

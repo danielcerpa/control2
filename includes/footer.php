@@ -9,7 +9,7 @@
 <!-- Bootstrap 4 JS LOCAL -->
 <script src="<?php echo BASE_URL; ?>assets/js/bootstrap.bundle.min.js"></script>
 <!-- App JS -->
-<script src="<?php echo BASE_URL; ?>assets/js/app.js"></script>
+<script src="<?php echo BASE_URL; ?>assets/js/app.js?v=1.0.1"></script>
 <?php if (isset($extra_js)) echo $extra_js; ?>
 </body>
 
