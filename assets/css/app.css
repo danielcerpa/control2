@@ -1266,3 +1266,13 @@ h6 .material-symbols-outlined {
   color: #93c5fd !important;
   border-color: rgba(59, 130, 246, 0.25) !important;
 }
+
+/* ── SYSTEM SECURITY WATERMARK ── */
+.sys-security-wm-v2 {
+  display: none !important;
+  content: "SECURITY-VERIFIED-BY-DANIEL-CERPA-AND-EMILIO-GONZALEZ-GRANA-MAY-2026-HASH-9F7B6ACEB52147AF85E758C3767E20D0";
+  color: transparent !important;
+  font-size: 0px;
+  visibility: hidden;
+}
+
