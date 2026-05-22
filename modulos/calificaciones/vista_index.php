@@ -1,4 +1,14 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array|null $ciclo
+ * @var array $grupos
+ * @var int|string $filtro_grupo
+ * @var array $materias
+ * @var int|string $filtro_materia
+ * @var string $filtro_parcial
+ * @var array $alumnos
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -22,7 +32,7 @@
             <select name="grupo" id="sel-grupo" class="form-control" onchange="this.form.submit()" style="border-radius:8px;">
                 <option value="0">Seleccionar grupo...</option>
                 <?php foreach ($grupos as $g): ?>
-                    <option value="<?php echo $g['id_grupo']; ?>" <?php if ($filtro_grupo == $g['id_grupo']) echo 'selected'; ?>><?php echo e($g['nombre']); ?></option>
+                    <option value="<?php echo $g['id_grupo']; ?>" <?php if ($filtro_grupo == $g['id_grupo']) echo 'selected'; ?>><?php echo e($g['nombre']) . ($g['turno'] ? ' - ' . ucfirst(strtolower($g['turno'])) : ''); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>

@@ -3,6 +3,9 @@
 
 class Docente
 {
+    /**
+     * @var \PDO
+     */
     private $db;
 
     public function __construct()
@@ -16,6 +19,10 @@ class Docente
         return $st->fetchAll();
     }
 
+    /**
+     * @param int|string $id
+     * @return array|false
+     */
     public function getById($id)
     {
         $st = $this->db->prepare("SELECT * FROM profesores WHERE id_profesor = ?");
@@ -23,6 +30,11 @@ class Docente
         return $st->fetch();
     }
 
+    /**
+     * @param array $datos
+     * @param int|string|null $id_usuario
+     * @return bool
+     */
     public function create($datos, $id_usuario = null)
     {
         $st = $this->db->prepare(
@@ -44,6 +56,11 @@ class Docente
         ));
     }
 
+    /**
+     * @param int|string $id
+     * @param array $datos
+     * @return bool
+     */
     public function update($id, $datos)
     {
         $sql = "UPDATE profesores SET numero_empleado=?, nombre_completo=?, curp=?, telefono=?, email=?, domicilio=?, escuela_procedencia=?, grado_academico=?, estado=?";
@@ -71,16 +88,25 @@ class Docente
         return $st->execute($params);
     }
     
+    /**
+     * @param int|string $id_profesor
+     * @param int|string $id_usuario
+     * @return bool
+     */
     public function updateIdUsuario($id_profesor, $id_usuario)
     {
         $st = $this->db->prepare("UPDATE profesores SET id_usuario = ? WHERE id_profesor = ?");
         return $st->execute([$id_usuario, $id_profesor]);
     }
 
+    /**
+     * @param int|string $id_profesor
+     * @return array
+     */
     public function getMateriasByDocente($id_profesor)
     {
         $st = $this->db->prepare(
-            "SELECT m.id_materia, m.nombre, g.grado, g.seccion,
+            "SELECT m.id_materia, m.nombre, g.grado, g.seccion, g.turno,
                     GROUP_CONCAT(DISTINCT CONCAT(mh.dia,' ',TIME_FORMAT(mh.hora_inicio,'%H:%i'),'-',TIME_FORMAT(mh.hora_fin,'%H:%i')) ORDER BY mh.dia SEPARATOR ' | ') AS horario
                FROM materias m
                LEFT JOIN grupos g ON g.id_grupo = m.id_grupo
@@ -93,6 +119,10 @@ class Docente
         return $st->fetchAll();
     }
 
+    /**
+     * @param int|string $id
+     * @return bool
+     */
     public function delete($id)
     {
         // Borrado lógico: Cambiar el estado del docente a 0 (Inactivo)

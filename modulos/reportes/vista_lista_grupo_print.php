@@ -1,9 +1,16 @@
+<?php
+/**
+ * @var array $grupo
+ * @var array $alumnos
+ * @var array $ciclo
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Grupo - <?php echo e($grupo['nombre']); ?></title>
+    <title>Lista de Grupo - <?php echo e($grupo['nombre']) . ($grupo['turno'] ? ' - ' . ucfirst(strtolower($grupo['turno'])) : ''); ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -101,7 +108,7 @@
         <div class="subtitle">Lista Oficial de Alumnos</div>
 
         <div class="info-bar">
-            <span>GRUPO: <?php echo e($grupo['nombre']); ?></span>
+            <span>GRUPO: <?php echo e($grupo['nombre']) . ($grupo['turno'] ? ' - ' . ucfirst(strtolower($grupo['turno'])) : ''); ?></span>
             <span>FECHA: <?php echo date('d/m/Y H:i'); ?></span>
         </div>
     </div>

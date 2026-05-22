@@ -3,6 +3,9 @@
 
 class Horario
 {
+    /**
+     * @var \PDO
+     */
     private $db;
 
     public function __construct()
@@ -42,7 +45,8 @@ class Horario
             "SELECT a.id_alumno, a.nombre, a.apellido_paterno, a.apellido_materno,
                     a.matricula, a.ruta_foto, a.estado,
                     CONCAT(g.grado, g.seccion) AS grupo_nombre,
-                    g.turno
+                    g.turno,
+                    g.id_grupo
              FROM alumnos a
              LEFT JOIN alumno_grupo ag ON a.id_alumno = ag.id_alumno
              LEFT JOIN grupos g ON ag.id_grupo = g.id_grupo
@@ -54,6 +58,8 @@ class Horario
 
     /**
      * Obtiene el horario semanal completo de un alumno específico.
+     * @param int|string $id_alumno
+     * @return array
      */
     public function getHorarioPorAlumno($id_alumno)
     {
@@ -74,6 +80,10 @@ class Horario
         return $st->fetchAll();
     }
 
+    /**
+     * @param int|string $id
+     * @return array|false
+     */
     public function getById($id)
     {
         $st = $this->db->prepare("SELECT * FROM materias WHERE id_materia = ?");
@@ -81,16 +91,29 @@ class Horario
         return $st->fetch();
     }
 
+    /**
+     * @param array $datos
+     * @return bool
+     */
     public function create($datos)
     {
         return false; // ahora se hace desde materias
     }
 
+    /**
+     * @param int|string $id
+     * @param array $datos
+     * @return bool
+     */
     public function update($id, $datos)
     {
         return false; // ahora se hace desde materias
     }
 
+    /**
+     * @param int|string $id
+     * @return bool
+     */
     public function delete($id)
     {
         return false; // ahora se hace desde materias

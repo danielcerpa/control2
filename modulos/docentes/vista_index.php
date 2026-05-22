@@ -191,7 +191,7 @@ function confirmDeleteDocente(id, nombre) {
             <?php foreach ($d['materias'] as $mat): ?>
               <tr>
                 <td class="font-weight-bold"><?php echo e($mat['nombre']); ?></td>
-                <td><?php echo $mat['grado'] ? e($mat['grado']).'&deg; '.e($mat['seccion']) : '<span class="text-muted">Sin grupo</span>'; ?></td>
+                 <td><?php echo $mat['grado'] ? e($mat['grado']).'&deg; '.e($mat['seccion']) . ($mat['turno'] ? ' - ' . ucfirst(strtolower($mat['turno'])) : '') : '<span class="text-muted">Sin grupo</span>'; ?></td>
                 <td class="small text-muted"><?php echo e($mat['horario'] ?? '—'); ?></td>
               </tr>
             <?php endforeach; ?>

@@ -106,7 +106,7 @@
                             <select name="grupo_id" class="form-control" style="border-radius:8px;">
                                 <option value="">Seleccionar Grupo...</option>
                                 <?php foreach ($grupos as $g): ?>
-                                    <option value="<?php echo $g['id_grupo'] ?? $g['id']; ?>" <?php if (($datos['grupo_id'] ?? $datos['id_grupo']) == ($g['id_grupo'] ?? $g['id'])) echo 'selected'; ?>><?php echo e($g['nombre'] ?? ($g['grado'].$g['seccion'])); ?></option>
+                                    <option value="<?php echo $g['id_grupo'] ?? $g['id']; ?>" <?php if (($datos['grupo_id'] ?? $datos['id_grupo']) == ($g['id_grupo'] ?? $g['id'])) echo 'selected'; ?>><?php echo e($g['nombre'] ?? ($g['grado'].$g['seccion'])) . ($g['turno'] ? ' - ' . ucfirst(strtolower($g['turno'])) : ''); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

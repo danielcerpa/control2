@@ -94,7 +94,7 @@ include 'includes/header.php'; ?>
                         <?php if ($a['grupo_nombre']): ?>
                             <span class="alumno-badge-grupo">
                                 <span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;">groups</span>
-                                <?php echo e($a['grupo_nombre']); ?>
+                                <?php echo e($a['grupo_nombre']) . ($a['turno'] ? ' - ' . ucfirst(strtolower($a['turno'])) : ''); ?>
                             </span>
                         <?php endif; ?>
                     </div>

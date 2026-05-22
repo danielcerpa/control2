@@ -158,7 +158,7 @@ $cct_institucion    = get_config('cct_institucion');
                 <strong>CURP:</strong> <?php echo e($alumno['curp']); ?>
             </div>
             <div style="text-align: right;">
-                <strong>GRUPO:</strong> <?php echo e($grupo ? ($grupo['grado'] . $grupo['seccion']) : 'S/G'); ?><br>
+                <strong>GRUPO:</strong> <?php echo e($grupo ? ($grupo['grado'] . $grupo['seccion'] . ($grupo['turno'] ? ' - ' . ucfirst(strtolower($grupo['turno'])) : '')) : 'S/G'); ?><br>
                 <strong>GRADO:</strong> <?php echo e($grupo ? $grupo['grado'] : '—'); ?>°<br>
                 <strong>FECHA DE EMISIÓN:</strong> <?php echo date('d/m/Y'); ?>
             </div>

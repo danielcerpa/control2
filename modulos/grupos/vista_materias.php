@@ -1,4 +1,9 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $grupo
+ * @var array $materias
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -11,7 +16,7 @@
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1><span class="material-symbols-outlined mr-2" style="font-size:28px;">menu_book</span>Materias - Grupo <?php echo e($grupo['nombre']); ?></h1>
-        <p class="text-muted mb-0">Grado <?php echo e($grupo['grado']); ?> &mdash; Sección <?php echo e($grupo['seccion']); ?></p>
+        <p class="text-muted mb-0">Grado <?php echo e($grupo['grado']); ?> &mdash; Sección <?php echo e($grupo['seccion']); ?> &mdash; Turno: <?php echo e($grupo['turno'] ? ucfirst(strtolower($grupo['turno'])) : 'Sin asignar'); ?></p>
     </div>
     <a href="<?php echo BASE_URL; ?>grupos" class="btn btn-outline-secondary" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
         <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">arrow_back</span> Volver

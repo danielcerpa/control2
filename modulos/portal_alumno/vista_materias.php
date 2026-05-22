@@ -38,6 +38,9 @@ include 'includes/header.php'; ?>
         <div class="alumno-stat-chip">
             <span class="material-symbols-outlined" style="color:#7c3aed;">groups</span>
             Grupo <?php echo e($grupo['grado'] . '°' . $grupo['seccion']); ?>
+            <?php if (!empty($grupo['turno'])): ?>
+                &nbsp;·&nbsp; <?php echo ucfirst(strtolower($grupo['turno'])); ?>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
     </div>

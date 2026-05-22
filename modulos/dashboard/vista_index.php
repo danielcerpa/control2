@@ -1,4 +1,9 @@
 <?php
+/**
+ * @var array $u
+ * @var array $mis_horarios_hoy
+ * @var array $mis_materias
+ */
 $page_title    = 'Dashboard';
 $modulo_activo = 'dashboard';
 include 'includes/header.php';
@@ -99,7 +104,7 @@ include 'includes/header.php';
                                                 <?php echo substr($h['hora_inicio'], 0, 5); ?> – <?php echo substr($h['hora_fin'], 0, 5); ?>
                                             </td>
                                             <td><?php echo e($h['materia']); ?></td>
-                                            <td><?php echo e($h['grado'] . $h['seccion']); ?></td>
+                                            <td><?php echo e($h['grado'] . $h['seccion']) . ($h['turno'] ? ' - ' . ucfirst(strtolower($h['turno'])) : ''); ?></td>
                                             <td><?php echo e($h['salon']); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -178,7 +183,7 @@ include 'includes/header.php';
                                             <td class="align-middle font-weight-bold"><?php echo e($mat['materia']); ?></td>
                                             <td class="align-middle">
                                                 <?php if (!empty($mat['grado']) && !empty($mat['seccion'])): ?>
-                                                    <span class="badge badge-light border border-secondary"><?php echo e($mat['grado'] . ' ' . $mat['seccion']); ?></span>
+                                                    <span class="badge badge-light border border-secondary"><?php echo e($mat['grado'] . ' ' . $mat['seccion']) . ($mat['turno'] ? ' - ' . ucfirst(strtolower($mat['turno'])) : ''); ?></span>
                                                 <?php else: ?>
                                                     <span class="text-muted small">Sin grupo asignado</span>
                                                 <?php endif; ?>

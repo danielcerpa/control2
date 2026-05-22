@@ -41,7 +41,7 @@ class DashboardController extends Controller
                 // 1. Horario de hoy
                 if ($hoy) {
                     $st = $pdo->prepare(
-                        "SELECT mh.hora_inicio, mh.hora_fin, m.nombre AS materia, g.grado, g.seccion, s.nombre AS salon
+                        "SELECT mh.hora_inicio, mh.hora_fin, m.nombre AS materia, g.grado, g.seccion, g.turno, s.nombre AS salon
                                FROM materias m
                                JOIN materia_horarios mh ON mh.id_materia = m.id_materia
                                LEFT JOIN grupos g ON g.id_grupo = m.id_grupo
@@ -55,7 +55,7 @@ class DashboardController extends Controller
 
                 // 2. Todas las materias impartidas
                 $stMat = $pdo->prepare(
-                    "SELECT m.id_materia, m.nombre AS materia, g.grado, g.seccion, s.nombre AS salon
+                    "SELECT m.id_materia, m.nombre AS materia, g.grado, g.seccion, g.turno, s.nombre AS salon
                        FROM materias m
                        LEFT JOIN grupos g ON g.id_grupo = m.id_grupo
                        LEFT JOIN salones  s ON s.id_salon = m.id_salon

@@ -55,7 +55,7 @@ class HorariosController extends Controller
             if ($id_profesor) {
                 // Get all schedules for this teacher
                 $st = $pdo->prepare(
-                    "SELECT mh.dia, mh.hora_inicio, mh.hora_fin, m.nombre AS materia, g.grado, g.seccion, s.nombre AS salon, m.id_materia
+                    "SELECT mh.dia, mh.hora_inicio, mh.hora_fin, m.nombre AS materia, g.grado, g.seccion, g.turno, s.nombre AS salon, m.id_materia
                      FROM materias m
                      JOIN materia_horarios mh ON mh.id_materia = m.id_materia
                      LEFT JOIN grupos g ON g.id_grupo = m.id_grupo
@@ -71,7 +71,7 @@ class HorariosController extends Controller
                 $grid = [];
                 foreach ($dias as $d) $grid[$d] = [];
                 foreach ($horarios as $h) {
-                    $h['docente'] = (!empty($h['grado']) && !empty($h['seccion'])) ? "Grupo: {$h['grado']}{$h['seccion']}" : 'Sin grupo';
+                    $h['docente'] = (!empty($h['grado']) && !empty($h['seccion'])) ? "Grupo: {$h['grado']}{$h['seccion']}" . (!empty($h['turno']) ? ' - ' . ucfirst(strtolower($h['turno'])) : '') : 'Sin grupo';
                     $dia_norm = ucfirst(strtolower($h['dia']));
                     if (isset($grid[$dia_norm])) {
                         $grid[$dia_norm][] = $h;
@@ -99,18 +99,9 @@ class HorariosController extends Controller
             });
         }
         if ($filtros['grupo_id']) {
-            $nombreGrupo = '';
-            foreach ($grupos as $g) {
-                if ($g['id_grupo'] == $filtros['grupo_id']) {
-                    $nombreGrupo = $g['grado'] . $g['seccion'];
-                    break;
-                }
-            }
-            if ($nombreGrupo) {
-                $alumnos = array_filter($alumnos, function ($a) use ($nombreGrupo) {
-                    return ($a['grupo_nombre'] ?? '') === $nombreGrupo;
-                });
-            }
+            $alumnos = array_filter($alumnos, function ($a) use ($filtros) {
+                return ($a['id_grupo'] ?? 0) == $filtros['grupo_id'];
+            });
         }
 
         $this->view('horarios/index', [

@@ -3,6 +3,9 @@
 
 class Reporte
 {
+    /**
+     * @var \PDO
+     */
     private $db;
 
     public function __construct()
@@ -10,6 +13,10 @@ class Reporte
         $this->db = db_connect();
     }
 
+    /**
+     * @param int|string $id_grupo
+     * @return array
+     */
     public function getAlumnosByGrupo($id_grupo)
     {
         $st = $this->db->prepare(
@@ -23,6 +30,10 @@ class Reporte
         return $st->fetchAll();
     }
 
+    /**
+     * @param string $matricula
+     * @return array|false
+     */
     public function getAlumnoByMatricula($matricula)
     {
         $st = $this->db->prepare("SELECT * FROM alumnos WHERE matricula = ?");
@@ -30,10 +41,14 @@ class Reporte
         return $st->fetch();
     }
 
+    /**
+     * @param int|string $id_alumno
+     * @return array|false
+     */
     public function getGrupoAlumno($id_alumno)
     {
         $st = $this->db->prepare(
-            "SELECT g.grado, g.seccion, g.ciclo_escolar FROM grupos g 
+            "SELECT g.grado, g.seccion, g.turno, g.ciclo_escolar FROM grupos g 
                JOIN alumno_grupo ag ON ag.id_grupo = g.id_grupo
               WHERE ag.id_alumno = ? LIMIT 1"
         );
@@ -41,6 +56,11 @@ class Reporte
         return $st->fetch();
     }
 
+    /**
+     * @param int|string $id_alumno
+     * @param int|string|null $ciclo_escolar
+     * @return array
+     */
     public function getCalificacionesBoleta($id_alumno, $ciclo_escolar = null)
     {
         $query = "SELECT m.nombre AS materia,

@@ -122,7 +122,7 @@ include 'includes/header.php'; ?>
                             <option value="">Sin asignar</option>
                             <?php foreach ($grupos as $g): ?>
                                 <option value="<?php echo $g['id_grupo']; ?>" <?php if ($datos['grupo_id'] == $g['id_grupo']) echo 'selected'; ?>>
-                                    <?php echo e($g['nombre']); ?>
+                                    <?php echo e($g['nombre']) . ($g['turno'] ? ' - ' . ucfirst(strtolower($g['turno'])) : ''); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

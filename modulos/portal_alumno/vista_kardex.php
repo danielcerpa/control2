@@ -1,3 +1,12 @@
+<?php
+/**
+ * @var array|null $alumno
+ * @var array|null $grupo
+ * @var array|null $ciclo
+ * @var array $calificaciones
+ * @var float $promedio
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -95,7 +104,7 @@
         </div>
         <div class="field">
             <div class="label">Turno</div>
-            <div class="value"><?php echo e($grupo['turno'] ?? '—'); ?></div>
+            <div class="value"><?php echo $grupo && !empty($grupo['turno']) ? e(ucfirst(strtolower($grupo['turno']))) : '—'; ?></div>
         </div>
     </div>
 

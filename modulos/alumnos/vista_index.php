@@ -52,7 +52,7 @@ include 'includes/header.php'; ?>
                 <option value="0">Todos los grupos</option>
                 <?php foreach ($grupos as $g): ?>
                     <option value="<?php echo $g['id_grupo']; ?>" <?php if ($filtros['grupo'] == $g['id_grupo']) echo 'selected'; ?>>
-                        <?php echo e($g['nombre'] ?? ($g['grado'] . ' ' . $g['seccion'])); ?>
+                        <?php echo e($g['nombre'] ?? ($g['grado'] . ' ' . $g['seccion'])) . ($g['turno'] ? ' - ' . ucfirst(strtolower($g['turno'])) : ''); ?>
                     </option>
                 <?php endforeach; ?>
             </select>
