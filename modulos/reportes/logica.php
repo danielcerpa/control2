@@ -3,18 +3,13 @@
 
 class ReportesController extends Controller
 {
+    /** @var Reporte */
     private $reporteModel;
 
     public function __construct()
     {
         require_once 'config/init.php';
-        require_auth();
-
-        if (!puede_ver('reportes')) {
-            // we remove the hard block for now or implement real check
-            // header('Location: ' . BASE_URL . 'dashboard');
-            // exit;
-        }
+        require_perm('reportes');
 
         $this->reporteModel = $this->model('Reporte');
     }
@@ -58,9 +53,11 @@ class ReportesController extends Controller
         $grupo = $this->reporteModel->getGrupoAlumno($alumno['id_alumno']);
         $calificaciones = $this->reporteModel->getCalificacionesBoleta($alumno['id_alumno']);
 
-        $suma = 0;
-        foreach ($calificaciones as $c) $suma += $c['puntaje'];
-        $promedio = count($calificaciones) > 0 ? $suma / count($calificaciones) : 0;
+        $suma = 0; $cnt = 0;
+        foreach ($calificaciones as $c) {
+            if ($c['final'] !== null) { $suma += $c['final']; $cnt++; }
+        }
+        $promedio = $cnt > 0 ? $suma / $cnt : 0;
 
         $this->view('reportes/boleta_print', [
             'alumno'         => $alumno,

@@ -27,10 +27,17 @@ class Grupo
     private function _defaults($row)
     {
         $nombre = ($row['grado'] ?? '') . ($row['seccion'] ?? '');
+        $total_alumnos = 0;
+        if (isset($row['id_grupo'])) {
+            $st = $this->db->prepare("SELECT COUNT(*) FROM alumno_grupo WHERE id_grupo = ?");
+            $st->execute([$row['id_grupo']]);
+            $total_alumnos = $st->fetchColumn();
+        }
+
         return array_merge([
             'nombre'       => $nombre ?: 'Sin nombre',
-            'total_alumnos'=> 0,
-            'capacidad'    => 30,
+            'total_alumnos'=> $total_alumnos,
+            'capacidad'    => $row['capacidad'] ?? 50,
             'ciclo_nombre' => $row['ciclo_escolar'] ?? 'Sin ciclo',
         ], $row);
     }
@@ -38,14 +45,15 @@ class Grupo
     public function create($datos)
     {
         $st = $this->db->prepare(
-            "INSERT INTO grupos (grado, seccion, ciclo_escolar, turno)
-             VALUES (?,?,?,?)"
+            "INSERT INTO grupos (grado, seccion, ciclo_escolar, turno, capacidad)
+             VALUES (?,?,?,?,?)"
         );
         $st->execute(array(
             $datos['grado'],
             $datos['seccion'],
             $datos['ciclo_escolar'],
-            $datos['turno']
+            $datos['turno'],
+            $datos['capacidad']
         ));
         return $this->db->lastInsertId();
     }
@@ -53,7 +61,7 @@ class Grupo
     public function update($id, $datos)
     {
         $st = $this->db->prepare(
-            "UPDATE grupos SET grado=?, seccion=?, ciclo_escolar=?, turno=?
+            "UPDATE grupos SET grado=?, seccion=?, ciclo_escolar=?, turno=?, capacidad=?
              WHERE id_grupo=?"
         );
         return $st->execute(array(
@@ -61,6 +69,7 @@ class Grupo
             $datos['seccion'],
             $datos['ciclo_escolar'],
             $datos['turno'],
+            $datos['capacidad'],
             $id
         ));
     }

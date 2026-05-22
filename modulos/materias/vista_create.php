@@ -39,21 +39,25 @@
             <div class="card-body">
                 <form method="post" action="<?php echo BASE_URL; ?>materias/create" class="check-dirty">
                     <div class="row">
-                        <div class="col-md-12 form-group">
+                        <div class="col-md-4 form-group">
+                            <label class="small font-weight-bold">Clave <span class="text-danger">*</span></label>
+                            <input type="text" name="clave" class="form-control" value="<?php echo e($datos['clave'] ?? ''); ?>" maxlength="20" required style="border-radius:8px;">
+                        </div>
+                        <div class="col-md-8 form-group">
                             <label class="small font-weight-bold">Nombre de la Materia <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre" class="form-control" value="<?php echo e($datos['nombre']); ?>" maxlength="100" required style="border-radius:8px;">
+                            <input type="text" name="nombre" class="form-control" value="<?php echo e($datos['nombre']); ?>" maxlength="100" required pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo letras y espacios" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');" style="border-radius:8px;">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <label class="small font-weight-bold">Cupo Máximo</label>
-                            <input type="number" name="horas" class="form-control" value="<?php echo e($datos['horas'] ?: 30); ?>" min="1" max="100" style="border-radius:8px;">
+                            <label class="small font-weight-bold">Horas Asignadas <span class="text-muted" style="font-weight:400;">(por semana, mín. 2 — máx. 6)</span></label>
+                            <input type="number" name="horas" class="form-control" value="<?php echo e($datos['horas'] ?: 4); ?>" min="2" max="6" required oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="border-radius:8px;">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label class="small font-weight-bold">Grado Sugerido</label>
+                            <label class="small font-weight-bold">Grado</label>
                             <select name="grado" class="form-control" style="border-radius:8px;">
-                                <option value="">Cualquiera</option>
+                                <option value="">Seleccionar grupo</option>
                                 <?php for ($i = 1; $i <= 6; $i++): ?>
                                     <option value="<?php echo $i; ?>" <?php if ($datos['grado'] == $i) echo 'selected'; ?>><?php echo $i; ?>° Grado</option>
                                 <?php endfor; ?>
@@ -63,9 +67,9 @@
 
                     <div class="row">
                         <div class="col-md-8 form-group">
-                            <label class="small font-weight-bold">Ciclo Escolar (Opcional)</label>
-                            <select name="ciclo_id" class="form-control" style="border-radius:8px;">
-                                <option value="">Sin ciclo específico</option>
+                            <label class="small font-weight-bold">Ciclo Escolar <span class="text-danger">*</span> (Obligatorio)</label>
+                            <select name="ciclo_id" class="form-control" required style="border-radius:8px;">
+                                <option value="">Seleccionar ciclo escolar</option>
                                 <?php foreach ($ciclos as $c): ?>
                                     <option value="<?php echo $c['id_materia'] ?? $c['id']; ?>" <?php if ($datos['ciclo_id'] == ($c['id_materia'] ?? $c['id'])) echo 'selected'; ?>><?php echo e($c['nombre']); ?></option>
                                 <?php endforeach; ?>
@@ -89,7 +93,7 @@
                             <select name="docente_id" class="form-control select2" style="border-radius:8px;">
                                 <option value="">Seleccionar Profesor...</option>
                                 <?php foreach ($docentes as $d): ?>
-                                    <option value="<?php echo $d['id_profesor']; ?>" <?php if ($datos['docente_id'] == $d['id_profesor']) echo 'selected'; ?>><?php echo e($d['nombre_completo']); ?></option>
+                                    <option value="<?php echo $d['id_profesor']; ?>" <?php if ($datos['docente_id'] == $d['id_profesor']) echo 'selected'; ?>><?php echo e($d['nombre_completo']) . ' - ' . e($d['numero_empleado']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -113,32 +117,91 @@
                         </div>
                     </div>
 
-                    <div class="row align-items-center mb-3">
-                        <div class="col-md-6 form-group mb-0">
-                            <label class="small font-weight-bold text-secondary text-uppercase mb-2" style="letter-spacing:1px;">Días de Impartición</label>
-                            <div class="d-flex flex-wrap">
-                                <?php foreach(['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'] as $d): ?>
-                                <div class="custom-control custom-checkbox mr-3 mb-2">
-                                    <input type="checkbox" name="dias[]" value="<?php echo $d; ?>" class="custom-control-input" id="chk_<?php echo $d; ?>">
+                    <div class="mb-3">
+                        <label class="small font-weight-bold text-secondary text-uppercase mb-2" style="letter-spacing:1px;">Horario de Clases (Seleccionadas: <span id="horas_seleccionadas" class="text-primary font-weight-bold">0</span> hrs)</label>
+                        <?php foreach(['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'] as $d): 
+                            $isChecked = in_array($d, $datos['dias'] ?? []) ? 'checked' : '';
+                            $hi_val = $datos['hora_inicio'][$d] ?? '';
+                            $hf_val = $datos['hora_fin'][$d] ?? '';
+                            $disabled = $isChecked ? '' : 'disabled';
+                            $required = $isChecked ? 'required' : '';
+                        ?>
+                        <div class="row align-items-center mb-2">
+                            <div class="col-md-4">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" name="dias[]" value="<?php echo $d; ?>" class="custom-control-input dia-checkbox" id="chk_<?php echo $d; ?>" <?php echo $isChecked; ?>>
                                     <label class="custom-control-label pt-1" for="chk_<?php echo $d; ?>" style="cursor:pointer;"><?php echo $d; ?></label>
                                 </div>
-                                <?php endforeach; ?>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-muted mb-0">Hora Inicio</label>
+                                <input type="time" name="hora_inicio[<?php echo $d; ?>]" class="form-control time-input" id="hi_<?php echo $d; ?>" value="<?php echo $hi_val; ?>" style="border-radius:8px;" <?php echo $disabled; ?> <?php echo $required; ?>>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-muted mb-0">Hora Fin</label>
+                                <input type="time" name="hora_fin[<?php echo $d; ?>]" class="form-control time-input" id="hf_<?php echo $d; ?>" value="<?php echo $hf_val; ?>" style="border-radius:8px;" <?php echo $disabled; ?> <?php echo $required; ?>>
                             </div>
                         </div>
-                        <div class="col-md-3 form-group mb-0">
-                            <label class="small font-weight-bold text-secondary text-uppercase" style="letter-spacing:1px;">Hora Inicio</label>
-                            <input type="time" name="hora_inicio" class="form-control" style="border-radius:8px;">
-                        </div>
-                        <div class="col-md-3 form-group mb-0">
-                            <label class="small font-weight-bold text-secondary text-uppercase" style="letter-spacing:1px;">Hora Fin</label>
-                            <input type="time" name="hora_fin" class="form-control" style="border-radius:8px;">
-                        </div>
+                        <?php endforeach; ?>
+                        <small class="text-muted mt-2 d-block">Nota: Si se seleccionan 2 días, ambos deben tener el mismo horario. Si se seleccionan 3 días, los dos primeros deben coincidir.</small>
                     </div>
 
-                    <div class="form-group">
-                        <label class="small font-weight-bold">Descripción / Notas</label>
-                        <textarea name="descripcion" class="form-control" rows="3" data-maxlength="300" style="border-radius:8px;"><?php echo e($datos['descripcion']); ?></textarea>
-                    </div>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const checkboxes = document.querySelectorAll('.dia-checkbox');
+                        const timeInputs = document.querySelectorAll('.time-input');
+                        
+                        function calculateHours() {
+                            let totalMinutes = 0;
+                            checkboxes.forEach(chk => {
+                                if(chk.checked) {
+                                    const day = chk.value;
+                                    const hi = document.getElementById('hi_' + day).value;
+                                    const hf = document.getElementById('hf_' + day).value;
+                                    if(hi && hf) {
+                                        const d1 = new Date("2000-01-01 " + hi);
+                                        const d2 = new Date("2000-01-01 " + hf);
+                                        if(d2 > d1) {
+                                            totalMinutes += (d2 - d1) / 60000;
+                                        }
+                                    }
+                                }
+                            });
+                            const totalHours = totalMinutes / 60;
+                            let html = totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1);
+                            document.getElementById('horas_seleccionadas').textContent = html;
+                        }
+
+                        checkboxes.forEach(chk => {
+                            chk.addEventListener('change', function() {
+                                const day = this.value;
+                                const hi = document.getElementById('hi_' + day);
+                                const hf = document.getElementById('hf_' + day);
+                                if(this.checked) {
+                                    hi.disabled = false;
+                                    hi.required = true;
+                                    hf.disabled = false;
+                                    hf.required = true;
+                                } else {
+                                    hi.disabled = true;
+                                    hi.required = false;
+                                    hi.value = "";
+                                    hf.disabled = true;
+                                    hf.required = false;
+                                    hf.value = "";
+                                }
+                                calculateHours();
+                            });
+                        });
+                        
+                        timeInputs.forEach(input => {
+                            input.addEventListener('input', calculateHours);
+                        });
+
+                        // Calcular horas inicialmente por si hubo un error y se recargaron datos
+                        calculateHours();
+                    });
+                    </script>
 
                     <hr class="my-4">
 

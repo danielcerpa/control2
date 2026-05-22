@@ -13,15 +13,12 @@
         <p>Gestión de grupos escolares</p>
     </div>
     <div class="d-flex">
-        <a href="<?php echo BASE_URL; ?>grupos/search_delete" class="btn btn-outline-danger mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">delete</span> Borrar Grupo
-        </a>
-        <a href="<?php echo BASE_URL; ?>grupos/search_edit" class="btn btn-outline-primary mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">edit</span> Editar Grupo
-        </a>
-        <a href="<?php echo BASE_URL; ?>grupos/create" class="btn btn-primary" style="background:#197fe6; border:none; border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">group_add</span> Nuevo Grupo
-        </a>
+        <?php if ($u['rol'] === 'director' || $u['rol'] === 'admin'): ?>
+
+            <a href="<?php echo BASE_URL; ?>grupos/create" class="btn btn-primary" style="background:#197fe6; border:none; border-radius:8px; padding: 10px 20px; font-weight:600;">
+                <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">group_add</span> Nuevo Grupo
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -55,8 +52,24 @@
 
                     <p class="text-muted small mb-0 d-flex align-items-center justify-content-center">
                         <span class="material-symbols-outlined mr-1" style="font-size:16px;">calendar_today</span>
-                        <?php echo e($g['ciclo_nombre']); ?>
+                        <?php echo e($g['ciclo_nombre'] ?? $g['ciclo_escolar']); ?>
                     </p>
+
+                    <div class="mt-3">
+                        <a href="<?php echo BASE_URL; ?>grupos/materias/<?php echo $g['id_grupo']; ?>" class="btn btn-sm btn-outline-primary" style="border-radius: 8px; font-weight:600; padding: 6px 12px; width:100%;">
+                            <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: text-bottom;">list_alt</span> Ver Materias
+                        </a>
+                    </div>
+                    <?php if ($u['rol'] === 'director' || $u['rol'] === 'admin'): ?>
+                    <div class="d-flex justify-content-between mt-2">
+                        <a href="<?php echo BASE_URL; ?>grupos/edit/<?php echo $g['id_grupo']; ?>" class="btn btn-sm btn-outline-secondary" style="border-radius: 8px; font-weight:600; flex:1; margin-right: 4px;" title="Editar">
+                            <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: text-bottom;">edit</span>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteGrupo(<?php echo $g['id_grupo']; ?>, '<?php echo addslashes($g['nombre'] ?? ($g['grado'] . ' ' . $g['seccion'])); ?>')" style="border-radius: 8px; font-weight:600; flex:1; margin-left: 4px;" title="Eliminar">
+                            <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: text-bottom;">delete</span>
+                        </button>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
             </div>
@@ -71,5 +84,30 @@
         transform: translateY(-5px);
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmDeleteGrupo(id, nombre) {
+    Swal.fire({
+        title: '¿Eliminar grupo?',
+        html: 'Se eliminará el grupo <strong>' + nombre + '</strong> permanentemente.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        customClass: {
+            popup: 'rounded-xl shadow-lg border-0',
+            confirmButton: 'font-weight-bold px-4 rounded-lg',
+            cancelButton: 'font-weight-bold px-4 rounded-lg'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?php echo BASE_URL; ?>grupos/delete/' + id;
+        }
+    })
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>

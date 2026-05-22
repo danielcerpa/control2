@@ -1,4 +1,11 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $grid
+ * @var array $alumno
+ * @var int|null $grupo_id
+ * @var array|null $ciclo
+ */
+include 'includes/header.php'; ?>
 
 <?php
 /* ─── Construir el grid de horario (PHP-side, igual que el renderHorario() del modal) ─── */
@@ -134,7 +141,7 @@ foreach ($horarios_plano as $f) {
                                 <td class="td-vacia"></td>
                             <?php else: ?>
                                 <td class="td-materia" rowspan="<?php echo $celda['rowspan']; ?>">
-                                    <div class="materia-chip" style="background:<?php echo $celda['color']; ?>;">
+                                    <div class="materia-chip" style="--materia-color: <?php echo $celda['color']; ?>;">
                                         <span class="mat-nombre"><?php echo e($celda['materia']); ?></span>
                                         <?php if (!empty($celda['salon'])): ?>
                                             <span class="mat-salon">

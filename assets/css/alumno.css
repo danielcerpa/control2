@@ -432,3 +432,395 @@
         padding: 1.5rem 1rem;
     }
 }
+
+/* ============================================================
+   DARK MODE — Módulo Alumno
+   ============================================================ */
+[data-theme="dark"] .alumno-nav-card {
+    background: #0f0f11 !important;
+    border-color: #1c1c1f !important;
+    color: #e4e4e7 !important;
+}
+
+[data-theme="dark"] .alumno-nav-card .nav-card-desc {
+    color: #71717a !important;
+}
+
+/* Iconos de accesos rápidos */
+[data-theme="dark"] .alumno-nav-card.card-horario .nav-card-icon {
+    background: rgba(67, 56, 202, 0.15) !important;
+    color: #818cf8 !important;
+}
+[data-theme="dark"] .alumno-nav-card.card-calificaciones .nav-card-icon {
+    background: rgba(22, 163, 74, 0.15) !important;
+    color: #34d399 !important;
+}
+[data-theme="dark"] .alumno-nav-card.card-materias .nav-card-icon {
+    background: rgba(37, 99, 235, 0.15) !important;
+    color: #60a5fa !important;
+}
+
+/* Forzar color de texto en hover */
+[data-theme="dark"] .alumno-nav-card:hover {
+    color: #fff !important;
+}
+
+/* Stat Chips */
+[data-theme="dark"] .alumno-stat-chip {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    color: #e4e4e7 !important;
+}
+
+/* Materia Card */
+[data-theme="dark"] .materia-card {
+    background: #0f0f11 !important;
+    border-color: #1c1c1f !important;
+}
+[data-theme="dark"] .materia-card .materia-nombre {
+    color: #f4f4f5 !important;
+}
+[data-theme="dark"] .materia-card .materia-meta {
+    color: #a1a1aa !important;
+}
+[data-theme="dark"] .materia-card hr {
+    border-color: #1c1c1f !important;
+}
+[data-theme="dark"] .materia-card:hover {
+    border-color: rgba(37, 99, 235, 0.4) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Clases de Horarios en Materia Card */
+.materia-schedule-header {
+    color: #4338ca !important;
+}
+[data-theme="dark"] .materia-schedule-header {
+    color: #818cf8 !important;
+}
+.materia-schedule-dot {
+    width: 6px;
+    height: 6px;
+    background: #4338ca !important;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+[data-theme="dark"] .materia-schedule-dot {
+    background: #818cf8 !important;
+}
+
+/* Score Circle adaptive colors */
+[data-theme="dark"] .score-circle.aprobado {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
+}
+[data-theme="dark"] .score-circle.reprobado {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+/* Calificaciones table columns (Calif. Final) */
+.col-calif-final {
+    background: #eff6ff !important;
+    color: #1e40af !important;
+}
+[data-theme="dark"] .col-calif-final {
+    background: rgba(37, 99, 235, 0.12) !important;
+    color: #60a5fa !important;
+}
+.td-calif-final {
+    background: #f8fbff !important;
+}
+[data-theme="dark"] .td-calif-final {
+    background: rgba(37, 99, 235, 0.05) !important;
+}
+
+/* Badges */
+[data-theme="dark"] .cal-badge-aprobado {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #34d399 !important;
+}
+[data-theme="dark"] .cal-badge-reprobado {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #fca5a5 !important;
+}
+
+.cal-badge-pendiente {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-radius: 30px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.5px;
+}
+[data-theme="dark"] .cal-badge-pendiente {
+    background: #18181b !important;
+    color: #a1a1aa !important;
+    border: 1px solid #222226 !important;
+}
+
+.badge-cursando {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-block;
+}
+[data-theme="dark"] .badge-cursando {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.25) !important;
+}
+
+/* Stat Chips */
+.stat-chip-aprobado {
+    background: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+    color: #15803d !important;
+}
+.stat-chip-reprobado {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+    color: #991b1b !important;
+}
+[data-theme="dark"] .stat-chip-aprobado {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
+    color: #34d399 !important;
+}
+[data-theme="dark"] .stat-chip-reprobado {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+    color: #fca5a5 !important;
+}
+
+/* Info Boxes */
+.info-box-green {
+    border-radius: 12px;
+    background: #f8fafc;
+    border-left: 5px solid #10b981 !important;
+}
+.info-box-green p {
+    color: #334155 !important;
+}
+[data-theme="dark"] .info-box-green {
+    background: #0f0f11 !important;
+    border-left-color: #10b981 !important;
+    border-top: 1px solid #1c1c1f !important;
+    border-right: 1px solid #1c1c1f !important;
+    border-bottom: 1px solid #1c1c1f !important;
+}
+[data-theme="dark"] .info-box-green p {
+    color: #cbd5e1 !important;
+}
+
+.info-box-blue {
+    border-radius: 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+}
+.info-box-blue p {
+    color: #1e40af !important;
+}
+[data-theme="dark"] .info-box-blue {
+    background: rgba(37, 99, 235, 0.08) !important;
+    border-color: rgba(37, 99, 235, 0.2) !important;
+}
+[data-theme="dark"] .info-box-blue p {
+    color: #93c5fd !important;
+}
+
+/* Warning Card (No Group) */
+.no-grupo-card {
+    border-radius: 12px;
+    background: #fffbeb;
+}
+[data-theme="dark"] .no-grupo-card {
+    background: rgba(245, 158, 11, 0.08) !important;
+    border: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Global status text overrides in dark mode */
+[data-theme="dark"] .text-success {
+    color: #34d399 !important;
+}
+[data-theme="dark"] .text-danger {
+    color: #f87171 !important;
+}
+[data-theme="dark"] .text-warning {
+    color: #fbbf24 !important;
+}
+[data-theme="dark"] .text-info {
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .text-primary {
+    color: #60a5fa !important;
+}
+[data-theme="dark"] [style*="color:#7c3aed"],
+[data-theme="dark"] [style*="color: #7c3aed"] {
+    color: #a78bfa !important;
+}
+
+/* Materia Card divider */
+.materia-card hr {
+    border-top: 1px solid #f1f5f9;
+    margin: 0.75rem 0;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+}
+[data-theme="dark"] .materia-card hr {
+    border-top-color: #1c1c1f !important;
+}
+
+
+
+/* ============================================================
+   ESTILOS DE LA TABLA DE HORARIO COMPLETO (vista_horario.php)
+   ============================================================ */
+.horario-full-wrap {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.horario-full-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+.horario-full-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 14px 12px;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: center;
+}
+
+.horario-full-table thead th.col-hora {
+    text-align: left;
+    width: 110px;
+    min-width: 95px;
+    color: #94a3b8;
+}
+
+.horario-full-table tbody td {
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    padding: 0;
+}
+
+.horario-full-table tbody td.td-hora {
+    padding: 8px 14px;
+    color: #64748b;
+    font-weight: 700;
+    font-size: 11.5px;
+    white-space: nowrap;
+    background: #f8fafc;
+    border-right: 2px solid #e2e8f0;
+    text-align: left;
+}
+
+.horario-full-table tbody td.td-vacia {
+    background: #fff;
+    min-height: 52px;
+    height: 52px;
+    transition: background .15s;
+}
+
+.horario-full-table tbody td.td-vacia:hover {
+    background: #f8fafc;
+}
+
+.horario-full-table tbody td.td-materia {
+    padding: 6px 8px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.materia-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 10px;
+    padding: 8px 10px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.3;
+    min-height: 48px;
+    transition: transform .15s, box-shadow .15s;
+    cursor: default;
+}
+
+.materia-chip:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 14px rgba(0,0,0,.18);
+}
+
+.mat-nombre {
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.mat-salon, .mat-docente {
+    font-size: 10px;
+    opacity: .88;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+/* HORARIO COMPLETO - DARK MODE OVERRIDES */
+[data-theme="dark"] .horario-full-wrap {
+    background: #0f0f11 !important;
+    border-color: #1c1c1f !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,.5) !important;
+}
+
+[data-theme="dark"] .horario-full-table thead th {
+    background: #151518 !important;
+    color: #a1a1aa !important;
+    border-bottom-color: #1c1c1f !important;
+}
+
+[data-theme="dark"] .horario-full-table tbody td {
+    border-bottom-color: #1c1c1f !important;
+}
+
+[data-theme="dark"] .horario-full-table tbody td.td-hora {
+    background: #151518 !important;
+    color: #a1a1aa !important;
+    border-right-color: #1c1c1f !important;
+}
+
+[data-theme="dark"] .horario-full-table tbody td.td-vacia {
+    background: #070708 !important;
+}
+
+[data-theme="dark"] .horario-full-table tbody td.td-vacia:hover {
+    background: #0f0f11 !important;
+}
+

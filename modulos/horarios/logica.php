@@ -4,16 +4,22 @@
 
 class HorariosController extends Controller
 {
+    /** @var Horario */
     private $horarioModel;
+    /** @var Materia */
     private $materiaModel;
+    /** @var Docente */
     private $docenteModel;
+    /** @var Salon */
     private $salonModel;
+    /** @var Grupo */
     private $grupoModel;
+    /** @var CicloEscolar */
     private $cicloModel;
 
     public function __construct()
     {
-        require_auth();
+        require_perm('horarios');
         $this->horarioModel = new Horario();
         $this->materiaModel = new Materia();
         $this->docenteModel = new Docente();
@@ -35,38 +41,52 @@ class HorariosController extends Controller
         $alumnos = $this->horarioModel->getAlumnos();
         $grupos  = $this->grupoModel->getAll();
 
-        if ($u['rol'] === 'profesor' && $u['entidad_id']) {
-            require_once 'modulos/materias/conexion.php';
-            require_once 'modulos/inscripciones/conexion.php';
-            $materiaModel = new Materia();
-            $inscripcionModel = new Inscripcion();
-            
-            // Get materias of this profesor
-            $materias_profesor = array_filter($materiaModel->getAll(), function($m) use ($u) {
-                return $m['id_profesor'] == $u['entidad_id'];
-            });
-            $ids_materias_prof = array_column($materias_profesor, 'id_materia');
-            
-            // Get inscripciones for these materias
-            $inscripciones = $inscripcionModel->getAll();
-            $ids_alumnos_prof = [];
-            foreach ($inscripciones as $insc) {
-                if (in_array($insc['id_materia'], $ids_materias_prof)) {
-                    $ids_alumnos_prof[] = $insc['id_alumno'];
-                }
+        if ($u['rol'] === 'profesor' || $u['tipo'] === 'profesor' || $u['tipo'] === 'docente') {
+            $pdo = db_connect();
+            $id_profesor = null;
+            if (!empty($u['entidad_id'])) {
+                $id_profesor = $u['entidad_id'];
+            } else {
+                $st = $pdo->prepare("SELECT id_profesor FROM profesores WHERE id_usuario = ?");
+                $st->execute([$u['id']]);
+                $id_profesor = $st->fetchColumn();
             }
-            $ids_alumnos_prof = array_unique($ids_alumnos_prof);
-            
-            // Filter alumnos
-            $alumnos = array_filter($alumnos, function($a) use ($ids_alumnos_prof) {
-                return in_array($a['id_alumno'], $ids_alumnos_prof);
-            });
-            
-            // Filter grupos
-            $grupos_profesor_ids = array_column($materias_profesor, 'id_grupo');
-            $grupos = array_filter($grupos, function($g) use ($grupos_profesor_ids) {
-                return in_array($g['id_grupo'], $grupos_profesor_ids);
-            });
+
+            if ($id_profesor) {
+                // Get all schedules for this teacher
+                $st = $pdo->prepare(
+                    "SELECT mh.dia, mh.hora_inicio, mh.hora_fin, m.nombre AS materia, g.grado, g.seccion, s.nombre AS salon, m.id_materia
+                     FROM materias m
+                     JOIN materia_horarios mh ON mh.id_materia = m.id_materia
+                     LEFT JOIN grupos g ON g.id_grupo = m.id_grupo
+                     LEFT JOIN salones s ON s.id_salon = m.id_salon
+                     WHERE m.id_profesor = ? OR EXISTS (SELECT 1 FROM profesor_materia pm WHERE pm.id_materia = m.id_materia AND pm.id_profesor = ?)
+                     ORDER BY mh.hora_inicio"
+                );
+                $st->execute([$id_profesor, $id_profesor]);
+                $horarios = $st->fetchAll(PDO::FETCH_ASSOC);
+
+                // Organizar por día
+                $dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+                $grid = [];
+                foreach ($dias as $d) $grid[$d] = [];
+                foreach ($horarios as $h) {
+                    $h['docente'] = (!empty($h['grado']) && !empty($h['seccion'])) ? "Grupo: {$h['grado']}{$h['seccion']}" : 'Sin grupo';
+                    $dia_norm = ucfirst(strtolower($h['dia']));
+                    if (isset($grid[$dia_norm])) {
+                        $grid[$dia_norm][] = $h;
+                    }
+                }
+
+                $this->view('horarios/mi_horario', [
+                    'grid'          => $grid,
+                    'dias'          => $dias,
+                    'ciclo'         => $ciclo,
+                    'page_title'    => 'Mi Horario Semanal',
+                    'modulo_activo' => 'horarios',
+                ]);
+                exit; // stop executing the rest of index()
+            }
         }
 
         // Filtrar en PHP
@@ -106,6 +126,9 @@ class HorariosController extends Controller
      * Devuelve el horario semanal de un alumno en JSON (para el modal).
      * URL: horarios/horario/{id_alumno}
      */
+    /**
+     * @param int|string $id_alumno
+     */
     public function horario($id_alumno)
     {
         header('Content-Type: application/json');
@@ -116,6 +139,11 @@ class HorariosController extends Controller
 
     public function create()
     {
+        $u = session_user();
+        if ($u['rol'] !== 'admin' && $u['rol'] !== 'director') {
+            redirect(BASE_URL . 'dashboard', 'No tiene privilegios para realizar esta acción.', 'danger');
+        }
+
         $errors   = [];
         $warnings = [];
         $datos    = [
@@ -178,8 +206,16 @@ class HorariosController extends Controller
         ]);
     }
 
+    /**
+     * @param int|string $id
+     */
     public function edit($id)
     {
+        $u = session_user();
+        if ($u['rol'] !== 'admin' && $u['rol'] !== 'director') {
+            redirect(BASE_URL . 'dashboard', 'No tiene privilegios para realizar esta acción.', 'danger');
+        }
+
         $oferta = $this->horarioModel->getById($id);
         if (!$oferta) {
             header('Location: ' . BASE_URL . 'horarios');
@@ -250,10 +286,18 @@ class HorariosController extends Controller
         ]);
     }
 
+    /**
+     * @param int|string $id_alumno
+     */
     public function show($id_alumno)
     {
+        $u = session_user();
+        if ($u['rol'] !== 'admin' && $u['rol'] !== 'director') {
+            redirect(BASE_URL . 'dashboard', 'No tiene privilegios para realizar esta acción.', 'danger');
+        }
+
         $ciclo = $this->cicloModel->getActivo();
-        require_once 'modulos/alumno/conexion.php';
+        require_once 'modulos/portal_alumno/conexion.php';
         $portalModel = new AlumnoPortal();
 
         $alumno = $portalModel->getAlumno($id_alumno);
@@ -285,8 +329,16 @@ class HorariosController extends Controller
         ]);
     }
 
+    /**
+     * @param int|string $id
+     */
     public function delete($id)
     {
+        $u = session_user();
+        if ($u['rol'] !== 'admin' && $u['rol'] !== 'director') {
+            redirect(BASE_URL . 'dashboard', 'No tiene privilegios para realizar esta acción.', 'danger');
+        }
+
         try {
             $this->horarioModel->delete($id);
             redirect(BASE_URL . 'horarios', 'Registro eliminado correctamente');

@@ -12,7 +12,18 @@ class Usuario
 
     public function getAll()
     {
-        $st = $this->db->query("SELECT * FROM usuarios ORDER BY nombre_usuario");
+        $st = $this->db->query("
+            SELECT u.*,
+                   CASE 
+                       WHEN a.id_alumno IS NOT NULL THEN 'alumno'
+                       WHEN p.id_profesor IS NOT NULL THEN 'docente'
+                       ELSE 'admin'
+                   END as rol
+            FROM usuarios u
+            LEFT JOIN alumnos a ON u.id_usuario = a.id_usuario
+            LEFT JOIN profesores p ON u.id_usuario = p.id_usuario
+            ORDER BY u.nombre_usuario
+        ");
         return $st->fetchAll();
     }
 
@@ -75,7 +86,16 @@ class Usuario
 
     public function delete($id)
     {
-        $st = $this->db->prepare("DELETE FROM usuarios WHERE id_usuario = ?");
-        return $st->execute([$id]);
+        // Borrado lógico: Cambiar el estado del usuario a 0 (Inactivo)
+        $st = $this->db->prepare("UPDATE usuarios SET estado = 0 WHERE id_usuario = ?");
+        $success = $st->execute([$id]);
+
+        if ($success) {
+            // Desactivar también en cascada en las tablas de alumnos y profesores vinculados a este usuario
+            $this->db->prepare("UPDATE alumnos SET estado = 0 WHERE id_usuario = ?")->execute([$id]);
+            $this->db->prepare("UPDATE profesores SET estado = 0 WHERE id_usuario = ?")->execute([$id]);
+        }
+
+        return $success;
     }
 }

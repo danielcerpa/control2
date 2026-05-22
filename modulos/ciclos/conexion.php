@@ -76,4 +76,10 @@ class CicloEscolar
             $id,
         ]);
     }
+
+    public function delete($id)
+    {
+        $st = $this->db->prepare("DELETE FROM ciclos_escolares WHERE id = ?");
+        return $st->execute([$id]);
+    }
 }

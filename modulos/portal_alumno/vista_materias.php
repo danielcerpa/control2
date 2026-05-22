@@ -1,4 +1,10 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $materias
+ * @var array|null $grupo
+ * @var array|null $ciclo
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -8,7 +14,7 @@
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a href="<?php echo BASE_URL; ?>alumno/perfil">Mi Perfil</a>
+            <a href="<?php echo BASE_URL; ?>portal_alumno/perfil">Mi Perfil</a>
         </li>
         <li class="breadcrumb-item active">Mis Materias</li>
     </ol>
@@ -63,11 +69,11 @@
             <!-- Badge de estado (Activo / Inactivo) -->
             <div class="materia-badge-estado">
                 <?php if ($m['estado']): ?>
-                    <span class="badge" style="background:#dcfce7; color:#166534; border-radius:20px; padding:4px 12px; font-size:10px; font-weight:700;">
-                        <span class="material-symbols-outlined mr-1" style="font-size:12px;">check_circle</span>ACTIVO
+                    <span class="badge badge-status badge-status-activo">
+                        <span class="material-symbols-outlined mr-1" style="font-size:12px; vertical-align: middle;">check_circle</span>ACTIVO
                     </span>
                 <?php else: ?>
-                    <span class="badge" style="background:#f3f4f6; color:#6b7280; border-radius:20px; padding:4px 12px; font-size:10px; font-weight:700;">
+                    <span class="badge badge-status badge-status-cerrado">
                         INACTIVO
                     </span>
                 <?php endif; ?>
@@ -76,7 +82,7 @@
             <!-- Nombre de la materia -->
             <div class="materia-nombre pr-4"><?php echo e($m['nombre']); ?></div>
 
-            <hr style="border-color:#f1f5f9; margin: 0.75rem 0;">
+            <hr>
 
             <!-- Metadata -->
             <?php if (!empty($m['docente'])): ?>
@@ -105,15 +111,15 @@
             <?php endif; ?>
 
             <?php if (!empty($m['horarios'])): ?>
-            <hr style="border-color:#f1f5f9; margin: 0.75rem 0;">
-            <div class="materia-meta mb-1">
-                <span class="material-symbols-outlined" style="color:#4338ca;">schedule</span>
-                <span class="font-weight-bold" style="color:#4338ca;">Horarios:</span>
+            <hr>
+            <div class="materia-meta mb-1 materia-schedule-header">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="font-weight-bold">Horarios:</span>
             </div>
             <div class="pl-1" style="margin-top: 4px;">
                 <?php foreach ($m['horarios'] as $h): ?>
                 <div class="materia-meta mb-1">
-                    <span style="width: 6px; height: 6px; background: #4338ca; border-radius: 50%; display: inline-block; margin-right: 4px; flex-shrink:0;"></span>
+                    <span class="materia-schedule-dot"></span>
                     <span><?php echo ucfirst(strtolower($h['dia'])); ?>
                         — <?php echo substr($h['hora_inicio'], 0, 5); ?> a <?php echo substr($h['hora_fin'], 0, 5); ?>
                     </span>
@@ -123,11 +129,11 @@
             <?php endif; ?>
 
             <?php if (!empty($m['calificacion'])): ?>
-            <hr style="border-color:#f1f5f9; margin: 0.75rem 0;">
+            <hr>
             <div class="d-flex align-items-center justify-content-between">
                 <span class="materia-meta">
                     <span class="material-symbols-outlined" style="color:#64748b;">grade</span>
-                    Última calificación
+                    Calificación Final
                 </span>
                 <div class="score-circle <?php echo $m['calificacion'] >= 6 ? 'aprobado' : 'reprobado'; ?>" style="width:38px; height:38px; font-size:0.85rem;">
                     <?php echo number_format($m['calificacion'], 1); ?>
@@ -140,10 +146,10 @@
 </div>
 
 <!-- Nota informativa -->
-<div class="mt-2 p-3" style="border-radius:12px; background: #eff6ff; border: 1px solid #bfdbfe;">
+<div class="mt-2 p-3 info-box-blue">
     <div class="d-flex align-items-start">
         <span class="material-symbols-outlined text-primary mr-3" style="font-size:20px; flex-shrink:0;">info</span>
-        <p class="small text-secondary mb-0">
+        <p class="small mb-0">
             Este listado muestra únicamente las materias del ciclo escolar activo. Para consultar materias de ciclos anteriores dirígete a las oficinas administrativas.
         </p>
     </div>

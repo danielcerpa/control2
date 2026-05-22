@@ -46,6 +46,7 @@ class Horario
              FROM alumnos a
              LEFT JOIN alumno_grupo ag ON a.id_alumno = ag.id_alumno
              LEFT JOIN grupos g ON ag.id_grupo = g.id_grupo
+             WHERE a.estado = 1
              ORDER BY a.apellido_paterno, a.nombre"
         );
         return $st->fetchAll();

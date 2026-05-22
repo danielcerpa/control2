@@ -39,24 +39,26 @@ class Salon
     public function create($datos)
     {
         $st = $this->db->prepare(
-            "INSERT INTO salones (nombre, capacidad)
-             VALUES (?,?)"
+            "INSERT INTO salones (nombre, capacidad, edificio)
+             VALUES (?,?,?)"
         );
         return $st->execute(array(
             $datos['nombre'],
-            $datos['capacidad']
+            $datos['capacidad'],
+            $datos['edificio'] ?? ''
         ));
     }
 
     public function update($id, $datos)
     {
         $st = $this->db->prepare(
-            "UPDATE salones SET nombre=?, capacidad=?
+            "UPDATE salones SET nombre=?, capacidad=?, edificio=?
              WHERE id_salon=?"
         );
         return $st->execute(array(
             $datos['nombre'],
             $datos['capacidad'],
+            $datos['edificio'] ?? '',
             $id
         ));
     }

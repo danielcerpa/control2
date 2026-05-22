@@ -1,4 +1,11 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array|null $ciclo
+ * @var array $filtros
+ * @var array $grupos
+ * @var array $alumnos
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -64,7 +71,8 @@
             <div class="alumno-card" data-id="<?php echo $a['id_alumno']; ?>"
                  data-nombre="<?php echo e($a['nombre'] . ' ' . $a['apellido_paterno'] . ' ' . $a['apellido_materno']); ?>"
                  data-matricula="<?php echo e($a['matricula']); ?>"
-                 data-grupo="<?php echo e($a['grupo_nombre'] ?? '—'); ?>">
+                 data-grupo="<?php echo e($a['grupo_nombre'] ?? '—'); ?>"
+                 style="--student-color: <?php echo $color; ?>;">
 
                 <!-- Avatar -->
                 <div class="alumno-avatar" style="background:<?php echo $color; ?>15; border:3px solid <?php echo $color; ?>30;">

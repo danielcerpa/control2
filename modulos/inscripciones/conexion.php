@@ -65,13 +65,13 @@ class Inscripcion
     public function getByAlumno($id_alumno)
     {
         $st = $this->db->prepare(
-            "SELECT i.*, m.dia, m.hora_inicio, m.hora_fin, m.nombre AS materia, p.nombre_completo AS profesor, s.nombre AS salon
+            "SELECT i.*, m.nombre AS materia, p.nombre_completo AS profesor, s.nombre AS salon
              FROM inscripciones i
              JOIN materias m ON i.id_materia = m.id_materia
              LEFT JOIN profesores p ON m.id_profesor = p.id_profesor
              LEFT JOIN salones s ON m.id_salon = s.id_salon
              WHERE i.id_alumno = ?
-             ORDER BY m.ciclo_escolar DESC, m.dia, m.hora_inicio"
+             ORDER BY m.ciclo_escolar DESC, m.nombre"
         );
         $st->execute([$id_alumno]);
         return $st->fetchAll();

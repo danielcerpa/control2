@@ -41,11 +41,16 @@
                     <div class="row">
                         <div class="col-md-6 form-group">
                             <label class="small font-weight-bold">Nombre del Salón <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre" class="form-control" value="<?php echo e($datos['nombre']); ?>" maxlength="80" required style="border-radius:8px;">
+                            <input type="text" name="nombre" class="form-control" value="<?php echo e($datos['nombre']); ?>" maxlength="80" required pattern="^[A-Za-z0-9\-\s]+$" title="Solo se aceptan letras, números, espacios y guiones (-)" placeholder="Ej: Aula 101" style="border-radius:8px;" oninput="this.value = this.value.replace(/[^A-Za-z0-9\-\s]/g, '');">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label class="small font-weight-bold">Edificio / Ubicación</label>
-                            <input type="text" name="edificio" class="form-control" value="<?php echo e($datos['edificio']); ?>" maxlength="80" style="border-radius:8px;">
+                            <label class="small font-weight-bold">Edificio / Ubicación <span class="text-danger">*</span></label>
+                            <select name="edificio" class="form-control" style="border-radius:8px;" required>
+                                <option value="">Seleccione un edificio...</option>
+                                <?php foreach ($edificios_validos as $edificio): ?>
+                                    <option value="<?php echo e($edificio); ?>" <?php if ($datos['edificio'] === $edificio) echo 'selected'; ?>><?php echo e($edificio); ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
 
@@ -60,7 +65,7 @@
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Capacidad (Personas)</label>
-                            <input type="number" name="capacidad" class="form-control" value="<?php echo e($datos['capacidad']); ?>" min="1" max="1000" style="border-radius:8px;">
+                            <input type="number" name="capacidad" class="form-control" value="<?php echo e($datos['capacidad']); ?>" min="1" max="40" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Estado</label>
@@ -69,11 +74,6 @@
                                 <option value="Inactivo" <?php if ($datos['estado'] === 'Inactivo') echo 'selected'; ?>>Inactivo</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="small font-weight-bold">Descripción Adicional</label>
-                        <textarea name="descripcion" class="form-control" rows="3" data-maxlength="200" style="border-radius:8px;"><?php echo e($datos['descripcion']); ?></textarea>
                     </div>
 
                     <hr class="my-4">

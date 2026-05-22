@@ -39,12 +39,7 @@
             <div class="card-body">
                 <form method="post" action="<?php echo BASE_URL; ?>grupos/create" class="check-dirty">
                     <div class="row">
-                        <div class="col-md-4 form-group">
-                            <label class="small font-weight-bold">Nombre del Grupo <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre" class="form-control" value="<?php echo e($datos['nombre']); ?>" maxlength="20" placeholder="Ej: 1A" required style="border-radius:8px;">
-                            <small class="text-muted">Nombre corto identificador.</small>
-                        </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-6 form-group">
                             <label class="small font-weight-bold">Grado <span class="text-danger">*</span></label>
                             <select name="grado" class="form-control" required style="border-radius:8px;">
                                 <option value="">Seleccionar...</option>
@@ -53,7 +48,7 @@
                                 <?php endfor; ?>
                             </select>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-6 form-group">
                             <label class="small font-weight-bold">Sección <span class="text-danger">*</span></label>
                             <select name="seccion" class="form-control" required style="border-radius:8px;">
                                 <option value="">Seleccionar...</option>
@@ -76,7 +71,7 @@
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Capacidad Máxima</label>
-                            <input type="number" name="capacidad_max" class="form-control" value="<?php echo e($datos['capacidad']); ?>" min="1" max="100" style="border-radius:8px;">
+                            <input type="number" name="capacidad_max" class="form-control" value="<?php echo e($datos['capacidad'] ?? 50); ?>" min="1" max="50" style="border-radius:8px;">
                         </div>
                     </div>
 
@@ -84,11 +79,11 @@
                         <label class="small font-weight-bold">Turno</label>
                         <div class="d-flex">
                             <div class="custom-control custom-radio mr-4">
-                                <input type="radio" id="turnoM" name="turno" class="custom-control-input" value="Matutino" <?php echo ($datos['turno'] == 'Matutino') ? 'checked' : ''; ?>>
+                                <input type="radio" id="turnoM" name="turno" class="custom-control-input" value="Matutino" <?php echo (isset($datos['turno']) && strtoupper($datos['turno']) == 'MATUTINO') ? 'checked' : ''; ?>>
                                 <label class="custom-control-label" for="turnoM">Matutino</label>
                             </div>
                             <div class="custom-control custom-radio">
-                                <input type="radio" id="turnoV" name="turno" class="custom-control-input" value="Vespertino" <?php echo ($datos['turno'] == 'Vespertino') ? 'checked' : ''; ?>>
+                                <input type="radio" id="turnoV" name="turno" class="custom-control-input" value="Vespertino" <?php echo (isset($datos['turno']) && strtoupper($datos['turno']) == 'VESPERTINO') ? 'checked' : ''; ?>>
                                 <label class="custom-control-label" for="turnoV">Vespertino</label>
                             </div>
                         </div>

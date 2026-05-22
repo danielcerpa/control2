@@ -3,11 +3,12 @@
 
 class CiclosController extends Controller
 {
+    /** @var CicloEscolar */
     private $cicloModel;
 
     public function __construct()
     {
-        require_auth();
+        require_perm('ciclos');
         $this->cicloModel = new CicloEscolar();
     }
 
@@ -35,6 +36,8 @@ class CiclosController extends Controller
 
             if ($datos['nombre'] === '') {
                 $errors[] = 'El nombre del ciclo es obligatorio.';
+            } elseif (!preg_match('/^[a-zA-Z0-9\-\(\)\s]+$/', $datos['nombre'])) {
+                $errors[] = 'El nombre del ciclo solo permite letras, números, espacios, guiones y paréntesis.';
             }
             if ($datos['fecha_inicio'] === '') {
                 $errors[] = 'La fecha de inicio es obligatoria.';
@@ -42,8 +45,33 @@ class CiclosController extends Controller
             if ($datos['fecha_fin'] === '') {
                 $errors[] = 'La fecha de término es obligatoria.';
             }
-            if ($datos['fecha_inicio'] && $datos['fecha_fin'] && $datos['fecha_fin'] < $datos['fecha_inicio']) {
-                $errors[] = 'La fecha de término debe ser posterior a la de inicio.';
+            if ($datos['fecha_inicio'] && $datos['fecha_fin'] && $datos['fecha_fin'] <= $datos['fecha_inicio']) {
+                $errors[] = 'La fecha de término debe ser posterior y diferente a la de inicio.';
+            } elseif ($datos['fecha_inicio'] && $datos['fecha_fin']) {
+                $inicio = new DateTime($datos['fecha_inicio']);
+                $fin    = new DateTime($datos['fecha_fin']);
+                $dias   = $inicio->diff($fin)->days;
+                if ($dias > 366) {
+                    $errors[] = 'La duración del ciclo no puede superar los 366 días (1 año).';
+                }
+            }
+
+            if (empty($errors)) {
+                $db = db_connect();
+                $st = $db->prepare("SELECT id FROM ciclos_escolares WHERE LOWER(nombre) = LOWER(?) LIMIT 1");
+                $st->execute([$datos['nombre']]);
+                if ($st->fetch()) {
+                    $errors[] = 'Ya existe un ciclo escolar con ese nombre.';
+                }
+            }
+
+            if (empty($errors)) {
+                $db = db_connect();
+                $st = $db->prepare("SELECT id FROM ciclos_escolares WHERE (fecha_inicio <= ? AND fecha_fin >= ?)");
+                $st->execute([$datos['fecha_fin'], $datos['fecha_inicio']]);
+                if ($st->fetch()) {
+                    $errors[] = 'Las fechas se empalman con un ciclo escolar existente.';
+                }
             }
 
             if (empty($errors)) {
@@ -59,6 +87,9 @@ class CiclosController extends Controller
         ]);
     }
 
+    /**
+     * @param int|string $id
+     */
     public function activar($id)
     {
         if ($id) {
@@ -88,23 +119,18 @@ class CiclosController extends Controller
         ]);
     }
 
-        public function delete($id)
+        /**
+     * @param int|string $id
+     */
+    public function delete($id)
     {
-        try {
-            $this->cicloModel->delete($id);
-            redirect(BASE_URL . 'ciclos', 'Registro eliminado correctamente');
-        } catch (PDOException $e) {
-            if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
-                $tabla = 'otro módulo';
-                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
-                    $tabla = $m[1];
-                }
-                redirect(BASE_URL . 'ciclos', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
-            }
-            throw $e;
-        }
+        // Los ciclos escolares NO pueden eliminarse — contienen el historial académico completo.
+        redirect(BASE_URL . 'ciclos', 'Los ciclos escolares no pueden eliminarse. Representan el historial académico de la institución.', 'danger');
     }
 
+    /**
+     * @param int|string $id
+     */
     public function edit($id)
     {
         $errors = [];
@@ -119,6 +145,8 @@ class CiclosController extends Controller
 
             if ($datos['nombre'] === '') {
                 $errors[] = 'El nombre del ciclo es obligatorio.';
+            } elseif (!preg_match('/^[a-zA-Z0-9\-\(\)\s]+$/', $datos['nombre'])) {
+                $errors[] = 'El nombre del ciclo solo permite letras, números, espacios, guiones y paréntesis.';
             }
             if ($datos['fecha_inicio'] === '') {
                 $errors[] = 'La fecha de inicio es obligatoria.';
@@ -126,8 +154,33 @@ class CiclosController extends Controller
             if ($datos['fecha_fin'] === '') {
                 $errors[] = 'La fecha de término es obligatoria.';
             }
-            if ($datos['fecha_inicio'] && $datos['fecha_fin'] && $datos['fecha_fin'] < $datos['fecha_inicio']) {
-                $errors[] = 'La fecha de término debe ser posterior a la de inicio.';
+            if ($datos['fecha_inicio'] && $datos['fecha_fin'] && $datos['fecha_fin'] <= $datos['fecha_inicio']) {
+                $errors[] = 'La fecha de término debe ser posterior y diferente a la de inicio.';
+            } elseif ($datos['fecha_inicio'] && $datos['fecha_fin']) {
+                $inicio = new DateTime($datos['fecha_inicio']);
+                $fin    = new DateTime($datos['fecha_fin']);
+                $dias   = $inicio->diff($fin)->days;
+                if ($dias > 366) {
+                    $errors[] = 'La duración del ciclo no puede superar los 366 días (1 año).';
+                }
+            }
+
+            if (empty($errors)) {
+                $db = db_connect();
+                $st = $db->prepare("SELECT id FROM ciclos_escolares WHERE LOWER(nombre) = LOWER(?) AND id != ? LIMIT 1");
+                $st->execute([$datos['nombre'], $id]);
+                if ($st->fetch()) {
+                    $errors[] = 'Ya existe un ciclo escolar con ese nombre.';
+                }
+            }
+
+            if (empty($errors)) {
+                $db = db_connect();
+                $st = $db->prepare("SELECT id FROM ciclos_escolares WHERE (fecha_inicio <= ? AND fecha_fin >= ?) AND id != ?");
+                $st->execute([$datos['fecha_fin'], $datos['fecha_inicio'], $id]);
+                if ($st->fetch()) {
+                    $errors[] = 'Las fechas se empalman con un ciclo escolar existente.';
+                }
             }
 
             if (empty($errors)) {

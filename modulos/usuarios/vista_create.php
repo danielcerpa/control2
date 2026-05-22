@@ -29,14 +29,18 @@
                         <input type="text" name="nombre_usuario" class="form-control" required style="border-radius:8px;">
                     </div>
                     <div class="row">
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-4 form-group">
                             <label class="small font-weight-bold text-secondary">Contraseña <span class="text-danger">*</span></label>
                             <input type="password" name="contrasena" class="form-control" required style="border-radius:8px;">
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-4 form-group">
+                            <label class="small font-weight-bold text-secondary">Confirmar Contraseña <span class="text-danger">*</span></label>
+                            <input type="password" name="contrasena2" class="form-control" required style="border-radius:8px;">
+                        </div>
+                        <div class="col-md-4 form-group">
                             <div class="custom-control custom-switch mt-4">
                                 <input type="checkbox" name="estado" class="custom-control-input" id="estado" checked>
-                                <label class="custom-control-label font-weight-bold text-secondary" style="cursor:pointer;" for="estado">Usuario Activo</label>
+                                <label class="custom-control-label font-weight-bold" style="cursor:pointer; color: #10b981;" for="estado" id="estado_label">Usuario Activo</label>
                             </div>
                         </div>
                     </div>
@@ -56,3 +60,15 @@
 </form>
 
 <?php include 'includes/footer.php'; ?>
+
+<script>
+$(document).ready(function() {
+    $('#estado').change(function() {
+        if ($(this).is(':checked')) {
+            $('#estado_label').text('Usuario Activo').css('color', '#10b981');
+        } else {
+            $('#estado_label').text('Usuario Inactivo').css('color', '#ef4444');
+        }
+    });
+});
+</script>

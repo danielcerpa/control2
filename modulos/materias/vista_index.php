@@ -1,4 +1,12 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $filtros
+ * @var array $materias
+ * @var array $grupos_map
+ * @var array $salones_map
+ * @var array $ciclos_map
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -15,12 +23,6 @@
     </div>
     <?php if (!$isDocente): ?>
     <div class="d-flex">
-        <a href="<?php echo BASE_URL; ?>materias/search_delete" class="btn btn-outline-danger mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">delete</span> Borrar Materia
-        </a>
-        <a href="<?php echo BASE_URL; ?>materias/search_edit" class="btn btn-outline-primary mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">edit</span> Editar Materia
-        </a>
         <a href="<?php echo BASE_URL; ?>materias/create" class="btn btn-primary" style="background:#197fe6; border:none; border-radius:8px; padding: 10px 20px; font-weight:600;">
             <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">add_box</span> Nueva Materia
         </a>
@@ -71,13 +73,15 @@
                 <thead>
                     <tr class="text-uppercase" style="font-size:11px; letter-spacing:1px;">
                         <th class="pl-4">Nombre de Materia</th>
+                        <th>Matrícula</th>
                         <?php if ($isDocente): ?>
                             <th>Grupo</th>
                             <th>Salón</th>
                         <?php else: ?>
                             <th>Horario</th>
-                            <th>Cupo</th>
+                            <th>Horas Asig.</th>
                             <th>Ciclo Escolar</th>
+                            <th class="text-right pr-4">Acciones</th>
                         <?php endif; ?>
                     </tr>
                 </thead>
@@ -93,6 +97,7 @@
                     <?php foreach ($materias as $m): ?>
                         <tr>
                             <td class="pl-4 font-weight-bold" style="color:#197fe6;"><?php echo e($m['nombre']); ?></td>
+                            <td><?php echo e($m['clave']); ?></td>
                             <?php if ($isDocente): ?>
                                 <td><span class="badge" style="background:#f1f5f9; color:#475569; font-weight:500;"><?php echo e($grupos_map[$m['id_grupo']] ?? 'Sin grupo'); ?></span></td>
                                 <td><span class="text-muted"><span class="material-symbols-outlined mr-1" style="font-size:14px; vertical-align:-3px;">meeting_room</span><?php echo e($salones_map[$m['id_salon']] ?? 'Sin salón'); ?></span></td>
@@ -100,9 +105,9 @@
                                 <td>
                                     <?php if (!empty($m['horarios'])): ?>
                                         <?php foreach($m['horarios'] as $h): ?>
-                                            <span class="badge badge-light border d-block mb-1 text-left shadow-sm" style="font-size:12px; padding:6px 10px; border-radius:6px; background:#f8fafc;">
+                                            <span class="badge badge-horario mb-1 shadow-sm">
                                                 <span class="material-symbols-outlined mr-1 text-primary" style="font-size:14px; vertical-align:-3px;">event</span>
-                                                <strong style="color:#334155;"><?php echo htmlspecialchars($h['dia']); ?></strong>: <?php echo htmlspecialchars(substr($h['hora_inicio'],0,5)) . '-' . htmlspecialchars(substr($h['hora_fin'],0,5)); ?>hrs
+                                                <strong class="horario-dia"><?php echo htmlspecialchars($h['dia']); ?></strong>: <span class="horario-horas"><?php echo htmlspecialchars(substr($h['hora_inicio'],0,5)) . '-' . htmlspecialchars(substr($h['hora_fin'],0,5)); ?>hrs</span>
                                             </span>
                                         <?php endforeach; ?>
                                     <?php else: ?>
@@ -110,7 +115,23 @@
                                     <?php endif; ?>
                                 </td>
                                 <td><span class="badge" style="background:#f1f5f9; color:#475569; font-weight:500;"><?php echo e($m['cupo_maximo'] ?: 'N/A'); ?></span></td>
-                                <td><?php echo e($ciclos_map[$m['ciclo_escolar']] ?? ($m['ciclo_escolar'] ?: '—')); ?></td>
+                                <td>
+                                    <?php if (!empty($m['ciclo_escolar']) && isset($ciclos_map[$m['ciclo_escolar']])): ?>
+                                        <?php echo e($ciclos_map[$m['ciclo_escolar']]); ?>
+                                    <?php else: ?>
+                                        <span class="text-muted font-italic">ciclo escolar no asignado</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-right pr-4">
+                                    <div class="btn-group" role="group">
+                                        <a href="<?php echo BASE_URL; ?>materias/edit/<?php echo $m['id_materia']; ?>" class="btn btn-sm btn-outline-primary" title="Editar" style="border-radius:6px 0 0 6px;">
+                                            <span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">edit</span>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="confirmDeleteMateria(<?php echo $m['id_materia']; ?>, '<?php echo addslashes($m['nombre']); ?>')" style="border-radius:0 6px 6px 0;">
+                                            <span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
                             <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
@@ -119,6 +140,31 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmDeleteMateria(id, nombre) {
+    Swal.fire({
+        title: '¿Eliminar materia?',
+        html: 'Se eliminará la materia <strong>' + nombre + '</strong> permanentemente.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        customClass: {
+            popup: 'rounded-xl shadow-lg border-0',
+            confirmButton: 'font-weight-bold px-4 rounded-lg',
+            cancelButton: 'font-weight-bold px-4 rounded-lg'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?php echo BASE_URL; ?>materias/delete/' + id;
+        }
+    })
+}
+</script>
 
 
 

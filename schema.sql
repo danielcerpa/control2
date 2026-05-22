@@ -71,6 +71,7 @@ CREATE TABLE alumnos (
     curp VARCHAR(18) UNIQUE,
     genero CHAR(1),
     fecha_nac DATE,
+    fecha_ingreso DATE,
     domicilio VARCHAR(150),
     escuela_procedencia VARCHAR(100),
     ruta_foto VARCHAR(255),

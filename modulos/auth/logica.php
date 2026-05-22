@@ -14,10 +14,17 @@ class AuthController extends Controller
         }
 
         $error = '';
+        if (isset($_GET['error']) && $_GET['error'] === 'cuenta_inactiva') {
+            $error = 'Usuario inactivo.';
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nombre_usuario = isset($_POST['nombre_usuario']) ? trim($_POST['nombre_usuario']) : '';
             $contrasena  = isset($_POST['contrasena'])  ? $_POST['contrasena'] : '';
+
+            if (!isset($_SESSION['intentos_fallidos'])) {
+                $_SESSION['intentos_fallidos'] = 0;
+            }
 
             if ($nombre_usuario === '' || $contrasena === '') {
                 $error = 'Ingresa tu usuario y contraseña.';
@@ -30,13 +37,15 @@ class AuthController extends Controller
                 $user = $st->fetch();
 
                 if (!$user) {
+                    $_SESSION['intentos_fallidos']++;
                     $error = 'Usuario o contraseña incorrectos.';
                 } elseif (!$user['estado']) {
                     $error = 'Tu cuenta está inactiva. Contacta al administrador.';
-                    // NOTE: for now we fallback to simple check if hash doesn't match for backwards compatibility / simple setup
-                } elseif (!password_verify($contrasena, $user['contrasena']) && $contrasena !== $user['contrasena']) {
+                } elseif (!password_verify($contrasena, $user['contrasena'])) {
+                    $_SESSION['intentos_fallidos']++;
                     $error = 'Usuario o contraseña incorrectos.';
                 } else {
+                    $_SESSION['intentos_fallidos'] = 0;
                     // Determinar el tipo de usuario
                     $tipo = 'admin'; // Defecto si no es alumno ni docente
                     $foto = null;
@@ -74,6 +83,11 @@ class AuthController extends Controller
 
                     header('Location: ' . BASE_URL . 'dashboard');
                     exit;
+                }
+            }
+            if (!empty($error) && isset($_SESSION['intentos_fallidos']) && $_SESSION['intentos_fallidos'] >= 3) {
+                if ($error === 'Usuario o contraseña incorrectos.') {
+                    $error .= '<br><small class="mt-2 d-block">Si olvidó su contraseña, contacte con el administrador/director para restablecerla.</small>';
                 }
             }
         }

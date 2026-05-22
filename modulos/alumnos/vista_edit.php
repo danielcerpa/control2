@@ -1,4 +1,10 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $datos
+ * @var array|null $errors
+ * @var array $grupos
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -42,12 +48,12 @@
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Matrícula <span class="text-danger">*</span></label>
                             <input type="text" name="matricula" class="form-control"
-                                value="<?php echo e($datos['matricula']); ?>" maxlength="20" required style="border-radius:8px;">
+                                value="<?php echo e($datos['matricula']); ?>" maxlength="20" required pattern="[a-zA-Z0-9]+" title="Solo letras y números" oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">CURP <span class="text-danger">*</span></label>
                             <input type="text" name="curp" class="form-control" style="text-transform:uppercase; border-radius:8px;"
-                                value="<?php echo e($datos['curp']); ?>" maxlength="18" required>
+                                value="<?php echo e($datos['curp']); ?>" maxlength="18" required pattern="^[A-Za-z]{4}\d{6}[HMhm][A-Za-z]{5}[A-Za-z0-9]\d$" title="CURP de 18 caracteres (ej. ROPE950812HDFRNR08)" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Estado</label>
@@ -63,46 +69,51 @@
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Nombre(s) <span class="text-danger">*</span></label>
                             <input type="text" name="nombre" class="form-control"
-                                value="<?php echo e($datos['nombre']); ?>" maxlength="60" required style="border-radius:8px;">
+                                value="<?php echo e($datos['nombre']); ?>" maxlength="60" required pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo letras y espacios" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Apellido Paterno <span class="text-danger">*</span></label>
                             <input type="text" name="apellido_p" class="form-control"
-                                value="<?php echo e($datos['apellido_paterno']); ?>" maxlength="60" required style="border-radius:8px;">
+                                value="<?php echo e($datos['apellido_paterno']); ?>" maxlength="60" required pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo letras y espacios" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Apellido Materno</label>
                             <input type="text" name="apellido_m" class="form-control"
-                                value="<?php echo e($datos['apellido_materno']); ?>" maxlength="60" style="border-radius:8px;">
+                                value="<?php echo e($datos['apellido_materno']); ?>" maxlength="60" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo letras y espacios" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');" style="border-radius:8px;">
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-3 form-group">
                             <label class="small font-weight-bold">Sexo <span class="text-danger">*</span></label>
                             <select name="sexo" class="form-control" required style="border-radius:8px;">
                                 <option value="">Seleccionar...</option>
-                                <?php foreach (array('Masculino', 'Femenino', 'Otro') as $opt): ?>
+                                <?php foreach (array('Masculino', 'Femenino') as $opt): ?>
                                     <option value="<?php echo $opt; ?>" <?php if ($datos['genero'] === $opt) echo 'selected'; ?>><?php echo $opt; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-4 form-group">
-                            <label class="small font-weight-bold">Fecha de Nacimiento</label>
+                        <div class="col-md-3 form-group">
+                            <label class="small font-weight-bold">Fecha de Nacimiento <span class="text-danger">*</span></label>
                             <input type="date" name="fecha_nac" class="form-control"
-                                value="<?php echo e($datos['fecha_nac']); ?>" style="border-radius:8px;">
+                                value="<?php echo e($datos['fecha_nac']); ?>" required style="border-radius:8px;">
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-3 form-group">
+                            <label class="small font-weight-bold">Fecha de Ingreso <span class="text-danger">*</span></label>
+                            <input type="date" name="fecha_ingreso" class="form-control"
+                                value="<?php echo e($datos['fecha_ingreso'] ?? ''); ?>" required max="<?php echo date('Y-m-d'); ?>" style="border-radius:8px;">
+                        </div>
+                        <div class="col-md-3 form-group">
                             <label class="small font-weight-bold">Escuela de Procedencia</label>
                             <input type="text" name="escuela_procedencia" class="form-control"
-                                value="<?php echo e($datos['escuela_procedencia']); ?>" maxlength="120" style="border-radius:8px;">
+                                value="<?php echo e($datos['escuela_procedencia']); ?>" maxlength="120" pattern="[a-zA-Z0-9\s]+" title="Solo letras y números" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\s]/g, '');" style="border-radius:8px;">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="small font-weight-bold">Domicilio</label>
                         <textarea name="direccion" class="form-control" rows="2"
-                            data-maxlength="200" style="border-radius:8px;"><?php echo e($datos['direccion']); ?></textarea>
+                            data-maxlength="200" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s#.,\-]/g, '');" style="border-radius:8px;"><?php echo e($datos['direccion']); ?></textarea>
                     </div>
 
                     <div class="form-group">
@@ -110,7 +121,7 @@
                         <select name="grupo_id" class="form-control" style="border-radius:8px;">
                             <option value="">Sin asignar</option>
                             <?php foreach ($grupos as $g): ?>
-                                <option value="<?php echo $g['id_alumno']; ?>" <?php if ($datos['grupo_id'] == $g['id_alumno']) echo 'selected'; ?>>
+                                <option value="<?php echo $g['id_grupo']; ?>" <?php if ($datos['grupo_id'] == $g['id_grupo']) echo 'selected'; ?>>
                                     <?php echo e($g['nombre']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -125,20 +136,15 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <label class="small font-weight-bold">Nombre del Tutor</label>
+                            <label class="small font-weight-bold">Nombre del Tutor <span class="text-danger">*</span></label>
                             <input type="text" name="tutor_nombre" class="form-control"
-                                value="<?php echo e($datos['tutor_nombre']); ?>" maxlength="120" style="border-radius:8px;">
+                                value="<?php echo e($datos['tutor_nombre']); ?>" maxlength="120" required pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo letras y espacios" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');" style="border-radius:8px;">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label class="small font-weight-bold">Teléfono del Tutor</label>
+                            <label class="small font-weight-bold">Teléfono del Tutor <span class="text-danger">*</span></label>
                             <input type="tel" name="tutor_telefono" class="form-control"
-                                value="<?php echo e($datos['tutor_telefono']); ?>" maxlength="10" pattern="[0-9]{1,10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" style="border-radius:8px;">
+                                value="<?php echo e($datos['tutor_telefono']); ?>" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Debe contener exactamente 10 dígitos" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" style="border-radius:8px;">
                         </div>
-                    </div>
-                    <div class="form-group mb-0">
-                        <label class="small font-weight-bold">Comentarios / Observaciones</label>
-                        <textarea name="comentarios_familia" class="form-control" rows="3"
-                            data-maxlength="500" style="border-radius:8px;"><?php echo e($datos['comentarios_familia']); ?></textarea>
                     </div>
                 </div>
             </div>
@@ -150,16 +156,17 @@
                     <div class="row">
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Usuario (login)</label>
-                            <input type="text" name="login_id" class="form-control"
-                                value="<?php echo e($datos['login_id']); ?>" maxlength="30" style="border-radius:8px;">
+                            <input type="text" name="login_id" id="login_id" class="form-control"
+                                value="<?php echo e($datos['login_id']); ?>" maxlength="30" readonly style="border-radius:8px; background-color: #f8fafc;">
+                            <small class="text-muted">Se sincroniza con la matrícula</small>
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Nueva Contraseña</label>
-                            <input type="password" name="password" class="form-control" maxlength="100" placeholder="Sin cambios" style="border-radius:8px;">
+                            <input type="password" name="password" class="form-control" maxlength="100" placeholder="<?php echo empty($datos['id_usuario']) ? 'Requerido para crear cuenta' : 'Sin cambios'; ?>" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Confirmar Nueva Contraseña</label>
-                            <input type="password" name="password2" class="form-control" maxlength="100" placeholder="Sin cambios" style="border-radius:8px;">
+                            <input type="password" name="password2" class="form-control" maxlength="100" placeholder="<?php echo empty($datos['id_usuario']) ? 'Requerido para crear cuenta' : 'Sin cambios'; ?>" style="border-radius:8px;">
                         </div>
                     </div>
                 </div>
@@ -182,7 +189,7 @@
                     <small class="text-muted d-block mb-3">Clic para cambiar foto</small>
                     <input type="file" id="foto_file" accept="image/*" class="d-none">
                     <input type="hidden" name="foto_base64" id="foto_base64" value="">
-                    <button type="button" id="btn-quitar-foto" class="btn btn-sm btn-outline-danger <?php echo $datos['ruta_foto'] ? '' : 'd-none'; ?>" style="border-radius:20px;">Quitar foto</button>
+                    <button type="button" id="btn-quitar-foto" class="btn btn-sm btn-outline-danger" style="border-radius:20px; display: <?php echo $datos['ruta_foto'] ? 'inline-flex' : 'none'; ?> !important;">Quitar foto</button>
                 </div>
             </div>
         </div>
@@ -205,6 +212,14 @@
         const fileInput = document.getElementById('foto_file');
         const base64Input = document.getElementById('foto_base64');
         const btnQuitar = document.getElementById('btn-quitar-foto');
+        const matriculaInput = document.querySelector('input[name="matricula"]');
+        const loginIdInput = document.getElementById('login_id');
+
+        if (matriculaInput && loginIdInput) {
+            matriculaInput.addEventListener('input', function() {
+                loginIdInput.value = this.value;
+            });
+        }
 
         wrap.addEventListener('click', () => fileInput.click());
 
@@ -220,7 +235,7 @@
                 reader.onload = function(e) {
                     wrap.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
                     base64Input.value = e.target.result;
-                    btnQuitar.classList.remove('d-none');
+                    btnQuitar.style.setProperty('display', 'inline-flex', 'important');
                 }
                 reader.readAsDataURL(file);
             }
@@ -230,7 +245,7 @@
             wrap.innerHTML = '<span class="material-symbols-outlined text-muted" style="font-size:48px;">add_a_photo</span>';
             base64Input.value = 'quitar_foto';
             fileInput.value = '';
-            this.classList.add('d-none');
+            this.style.setProperty('display', 'none', 'important');
         });
     });
 </script>

@@ -1,11 +1,12 @@
 <?php
 class DocentesController extends Controller
 {
+    /** @var Docente */
     private $docenteModel;
 
     public function __construct()
     {
-        require_auth();
+        require_perm('docentes');
         $this->docenteModel = new Docente();
     }
 
@@ -43,6 +44,7 @@ class DocentesController extends Controller
 
         foreach ($docentes as &$d) {
             $d['estado'] = $d['estado'] ? 'Activo' : 'Inactivo';
+            $d['materias'] = $this->docenteModel->getMateriasByDocente($d['id_profesor']);
         }
 
         $this->view('docentes/index', [
@@ -51,21 +53,7 @@ class DocentesController extends Controller
         ]);
     }
 
-    public function search_edit()
-    {
-        $docentes = $this->docenteModel->getAll();
-        $this->view('docentes/search_edit', [
-            'docentes' => $docentes
-        ]);
-    }
 
-    public function search_delete()
-    {
-        $docentes = $this->docenteModel->getAll();
-        $this->view('docentes/search_delete', [
-            'docentes' => $docentes
-        ]);
-    }
 
     public function create()
     {
@@ -82,6 +70,9 @@ class DocentesController extends Controller
             'login_id' => '',
             'estado' => 'Activo'
         ];
+
+        $db_count = db_connect();
+        $total_docentes = (int)$db_count->query("SELECT COUNT(*) FROM profesores")->fetchColumn();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nombre = trim($_POST['nombre'] ?? '');
@@ -107,11 +98,65 @@ class DocentesController extends Controller
                 'nombre_completo' => trim("$nombre $apellido_p $apellido_m"),
                 'curp' => trim($_POST['curp'] ?? ''),
                 'telefono' => trim($_POST['telefono'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
                 'domicilio' => trim($_POST['domicilio'] ?? ''),
                 'escuela_procedencia' => '',
                 'grado_academico' => trim($_POST['grado_estudio'] ?? ''),
                 'estado' => (isset($_POST['estado']) && $_POST['estado'] === 'Activo') ? 1 : 0
             ];
+
+            $required_fields = [
+                'nombre_completo' => 'El nombre es obligatorio.',
+                'curp' => 'La CURP es obligatoria.',
+                'email' => 'El correo electrónico es obligatorio.',
+                'telefono' => 'El teléfono es obligatorio.',
+                'numero_empleado' => 'El número de empleado es obligatorio.',
+                'grado_estudio' => 'El grado de estudio es obligatorio.',
+                'login_id' => 'El nombre de usuario (login) es obligatorio.'
+            ];
+            foreach ($required_fields as $field => $msg) {
+                if (empty($datos[$field])) {
+                    $errors[] = $msg;
+                }
+            }
+
+            $curpRegex = '/^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/i';
+            if (!empty($datos['numero_empleado'])) {
+                if (!preg_match('/^[0-9]+$/', $datos['numero_empleado'])) {
+                    $errors[] = 'El número de empleado solo puede contener números.';
+                } else {
+                    $db_check = db_connect();
+                    $st_max = $db_check->query("SELECT MAX(CAST(numero_empleado AS UNSIGNED)) FROM profesores");
+                    $max_num = (int)$st_max->fetchColumn();
+                    $allowed_max = $max_num > 0 ? $max_num + 1 : 1;
+                    if ((int)$datos['numero_empleado'] > $allowed_max) {
+                        $errors[] = "El número de empleado no puede saltar la secuencia. El máximo permitido es $allowed_max. Actualmente hay $total_docentes docente(s) registrado(s).";
+                    }
+                }
+            }
+
+            if (!empty($datos['curp']) && !preg_match($curpRegex, $datos['curp'])) {
+                $errors[] = 'La CURP no tiene una estructura válida de 18 caracteres.';
+            }
+            if (!empty($nombre) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u', $nombre)) {
+                $errors[] = 'El nombre solo puede contener letras y acentos.';
+            }
+            if (!empty($apellido_p) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u', $apellido_p)) {
+                $errors[] = 'El apellido paterno solo puede contener letras y acentos.';
+            }
+            if (!empty($apellido_m) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u', $apellido_m)) {
+                $errors[] = 'El apellido materno solo puede contener letras y acentos.';
+            }
+            if (!empty($datos['telefono']) && !preg_match('/^[0-9]{10}$/', $datos['telefono'])) {
+                $errors[] = 'El teléfono debe tener exactamente 10 dígitos numéricos.';
+            }
+            if (!empty($datos['email']) && !filter_var($datos['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'El correo electrónico no tiene un formato válido.';
+            }
+
+            if (!empty($errors)) {
+                return $this->view('docentes/create', ['datos' => $datos, 'errors' => $errors, 'total_docentes' => $total_docentes]);
+            }
 
             // Procesar foto base64
             $datos_guardar['ruta_foto'] = null;
@@ -145,13 +190,15 @@ class DocentesController extends Controller
                     $db->rollBack();
                     return $this->view('docentes/create', [
                         'datos' => $datos, 
-                        'errors' => ['password' => 'Las contraseñas no coinciden.']
+                        'errors' => ['password' => 'Las contraseñas no coinciden.'],
+                        'total_docentes' => $total_docentes
                     ]);
                 } elseif (empty($password)) {
                     $db->rollBack();
                     return $this->view('docentes/create', [
                         'datos' => $datos, 
-                        'errors' => ['password' => 'Debe proporcionar una contraseña para el usuario.']
+                        'errors' => ['password' => 'Debe proporcionar una contraseña para el usuario.'],
+                        'total_docentes' => $total_docentes
                     ]);
                 } else {
                     require_once 'modulos/usuarios/conexion.php';
@@ -164,7 +211,8 @@ class DocentesController extends Controller
                         $db->rollBack();
                         return $this->view('docentes/create', [
                             'datos' => $datos, 
-                            'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
+                            'errors' => ['login_id' => 'El nombre de usuario ya está en uso.'],
+                            'total_docentes' => $total_docentes
                         ]);
                     }
 
@@ -189,15 +237,19 @@ class DocentesController extends Controller
                     }
                     return $this->view('docentes/create', [
                         'datos' => $datos, 
-                        'errors' => ['num_empleado' => $error_msg]
+                        'errors' => ['num_empleado' => $error_msg],
+                        'total_docentes' => $total_docentes
                     ]);
                 }
                 throw $e;
             }
         }
-        $this->view('docentes/create', ['datos' => $datos, 'errors' => []]);
+        $this->view('docentes/create', ['datos' => $datos, 'errors' => [], 'total_docentes' => $total_docentes]);
     }
 
+    /**
+     * @param int|string $id
+     */
     public function edit($id)
     {
         $docente = $this->docenteModel->getById($id);
@@ -207,11 +259,26 @@ class DocentesController extends Controller
         }
 
         // Dividir el nombre completo para el formulario y agregar campos falsos
-        $partes = explode(' ', $docente['nombre_completo']);
-        $docente['nombre_completo'] = $partes[0] ?? '';
-        $docente['apellido_paterno'] = $partes[1] ?? '';
-        $docente['apellido_materno'] = isset($partes[2]) ? implode(' ', array_slice($partes, 2)) : '';
-        $docente['email'] = '';
+        $partes = explode(' ', trim($docente['nombre_completo']));
+        $num_partes = count($partes);
+        if ($num_partes == 1) {
+            $docente['nombre_completo'] = $partes[0];
+            $docente['apellido_paterno'] = '';
+            $docente['apellido_materno'] = '';
+        } elseif ($num_partes == 2) {
+            $docente['nombre_completo'] = $partes[0];
+            $docente['apellido_paterno'] = $partes[1];
+            $docente['apellido_materno'] = '';
+        } elseif ($num_partes == 3) {
+            $docente['nombre_completo'] = $partes[0];
+            $docente['apellido_paterno'] = $partes[1];
+            $docente['apellido_materno'] = $partes[2];
+        } else {
+            $docente['apellido_materno'] = array_pop($partes);
+            $docente['apellido_paterno'] = array_pop($partes);
+            $docente['nombre_completo'] = implode(' ', $partes);
+        }
+        $docente['email'] = $docente['email'] ?? '';  // mantener email si viene de la BD
         $docente['grado_estudio'] = $docente['grado_academico'] ?? '';
         // Obtener el login_id si existe
         $docente['login_id'] = '';
@@ -223,6 +290,9 @@ class DocentesController extends Controller
                 $docente['login_id'] = $usu['nombre_usuario'];
             }
         }
+
+        $db_count = db_connect();
+        $total_docentes = (int)$db_count->query("SELECT COUNT(*) FROM profesores")->fetchColumn();
 
         $docente['estado'] = $docente['estado'] ? 'Activo' : 'Inactivo';
 
@@ -248,11 +318,77 @@ class DocentesController extends Controller
                 'nombre_completo' => trim("$nombre $apellido_p $apellido_m"),
                 'curp' => trim($_POST['curp'] ?? ''),
                 'telefono' => trim($_POST['telefono'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
                 'domicilio' => trim($_POST['domicilio'] ?? ''),
                 'escuela_procedencia' => '',
                 'grado_academico' => trim($_POST['grado_estudio'] ?? ''),
                 'estado' => (isset($_POST['estado']) && $_POST['estado'] === 'Activo') ? 1 : 0
             ];
+
+            $required_fields = [
+                'nombre_completo' => 'El nombre es obligatorio.',
+                'curp' => 'La CURP es obligatoria.',
+                'email' => 'El correo electrónico es obligatorio.',
+                'telefono' => 'El teléfono es obligatorio.',
+                'numero_empleado' => 'El número de empleado es obligatorio.',
+                'grado_estudio' => 'El grado de estudio es obligatorio.',
+                'login_id' => 'El nombre de usuario (login) es obligatorio.'
+            ];
+            $errors = [];
+            foreach ($required_fields as $field => $msg) {
+                if (empty($docente[$field])) {
+                    $errors[] = $msg;
+                }
+            }
+
+            $curpRegex = '/^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/i';
+            if (!empty($docente['numero_empleado'])) {
+                if (!preg_match('/^[0-9]+$/', $docente['numero_empleado'])) {
+                    $errors[] = 'El número de empleado solo puede contener números.';
+                } else {
+                    $db_check = db_connect();
+                    // Excluimos al docente actual del MAX si es que cambió su número
+                    $st_max = $db_check->prepare("SELECT MAX(CAST(numero_empleado AS UNSIGNED)) FROM profesores WHERE id_profesor != ?");
+                    $st_max->execute([$id]);
+                    $max_num = (int)$st_max->fetchColumn();
+                    $allowed_max = $max_num > 0 ? $max_num + 1 : 1;
+                    
+                    if ((int)$docente['numero_empleado'] > $allowed_max) {
+                        // Es posible que su número original ya sea el mayor (y por tanto mayor al max_num sin él)
+                        // Para permitir guardar si no cambió el número, comparamos con su número anterior
+                        $st_curr = $db_check->prepare("SELECT numero_empleado FROM profesores WHERE id_profesor = ?");
+                        $st_curr->execute([$id]);
+                        $curr_num = (int)$st_curr->fetchColumn();
+                        
+                        if ((int)$docente['numero_empleado'] !== $curr_num) {
+                            $errors[] = "El número de empleado no puede saltar la secuencia. El máximo permitido es $allowed_max. Actualmente hay $total_docentes docente(s) registrado(s).";
+                        }
+                    }
+                }
+            }
+
+            if (!empty($docente['curp']) && !preg_match($curpRegex, $docente['curp'])) {
+                $errors[] = 'La CURP no tiene una estructura válida de 18 caracteres.';
+            }
+            if (!empty($nombre) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u', $nombre)) {
+                $errors[] = 'El nombre solo puede contener letras y acentos.';
+            }
+            if (!empty($apellido_p) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u', $apellido_p)) {
+                $errors[] = 'El apellido paterno solo puede contener letras y acentos.';
+            }
+            if (!empty($apellido_m) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u', $apellido_m)) {
+                $errors[] = 'El apellido materno solo puede contener letras y acentos.';
+            }
+            if (!empty($docente['telefono']) && !preg_match('/^[0-9]{10}$/', $docente['telefono'])) {
+                $errors[] = 'El teléfono debe tener exactamente 10 dígitos numéricos.';
+            }
+            if (!empty($docente['email']) && !filter_var($docente['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'El correo electrónico no tiene un formato válido.';
+            }
+
+            if (!empty($errors)) {
+                return $this->view('docentes/edit', ['datos' => $docente, 'errors' => $errors, 'total_docentes' => $total_docentes]);
+            }
 
             // Procesar foto base64 o si fue eliminada
             $datos_guardar['ruta_foto'] = $docente['ruta_foto'] ?? null;
@@ -290,7 +426,8 @@ class DocentesController extends Controller
                     $db->rollBack();
                     return $this->view('docentes/edit', [
                         'datos' => $docente, 
-                        'errors' => ['password' => 'Las contraseñas no coinciden.']
+                        'errors' => ['password' => 'Las contraseñas no coinciden.'],
+                        'total_docentes' => $total_docentes
                     ]);
                 }
                 
@@ -301,7 +438,8 @@ class DocentesController extends Controller
                     $db->rollBack();
                     return $this->view('docentes/edit', [
                         'datos' => $docente, 
-                        'errors' => ['login_id' => 'El nombre de usuario ya está en uso.']
+                        'errors' => ['login_id' => 'El nombre de usuario ya está en uso.'],
+                        'total_docentes' => $total_docentes
                     ]);
                 }
 
@@ -313,12 +451,18 @@ class DocentesController extends Controller
                     $usuarioModel->update($docente['id_usuario'], $datos_usu, $contrasena);
                 } else {
                     // Crear
-                    if ($contrasena) {
-                        $new_id = $usuarioModel->create($datos_usu, $contrasena);
-                        if ($new_id) {
-                            $this->docenteModel->updateIdUsuario($id, $new_id); // we need to create this method in Docente model or just include it in update
-                        }
-                    } // si no le ponen contraseña nueva, no se le puede crear el usuario
+                    if (empty($password)) {
+                        $db->rollBack();
+                        return $this->view('docentes/edit', [
+                            'datos' => $docente, 
+                            'errors' => ['password' => 'Debe proporcionar una contraseña para crear la cuenta de usuario.'],
+                            'total_docentes' => $total_docentes
+                        ]);
+                    }
+                    $new_id = $usuarioModel->create($datos_usu, $contrasena);
+                    if ($new_id) {
+                        $this->docenteModel->updateIdUsuario($id, $new_id);
+                    }
                 }
             }
 
@@ -337,27 +481,40 @@ class DocentesController extends Controller
                     }
                     return $this->view('docentes/edit', [
                         'datos' => $docente, 
-                        'errors' => ['num_empleado' => $error_msg]
+                        'errors' => ['num_empleado' => $error_msg],
+                        'total_docentes' => $total_docentes
                     ]);
                 }
                 throw $e;
             }
         }
-        $this->view('docentes/edit', ['datos' => $docente, 'errors' => []]);
+        $this->view('docentes/edit', ['datos' => $docente, 'errors' => [], 'total_docentes' => $total_docentes]);
     }
 
-        public function delete($id)
+    /**
+     * @param int|string $id
+     */
+    public function delete($id)
     {
+        $docente = $this->docenteModel->getById($id);
+        $id_usuario = $docente ? $docente['id_usuario'] : null;
+
+        $db = db_connect();
+        $db->beginTransaction();
         try {
             $this->docenteModel->delete($id);
-            redirect(BASE_URL . 'docentes', 'Registro eliminado correctamente');
+
+            // Desactivar el usuario de acceso asociado si existe
+            if ($id_usuario) {
+                $db->prepare("UPDATE usuarios SET estado = 0 WHERE id_usuario = ?")->execute([$id_usuario]);
+            }
+
+            $db->commit();
+            redirect(BASE_URL . 'docentes', 'Docente dado de baja correctamente');
         } catch (PDOException $e) {
+            $db->rollBack();
             if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
-                $tabla = 'otro módulo';
-                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
-                    $tabla = $m[1];
-                }
-                redirect(BASE_URL . 'docentes', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+                redirect(BASE_URL . 'docentes', delete_error_msg($e), 'danger');
             }
             throw $e;
         }

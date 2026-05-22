@@ -43,10 +43,9 @@ class Materia
         return false;
     }
 
-    /** Rellena campos que pueden no existir en la BD para no generar Warnings */
     private function _defaults($row)
     {
-        return array_merge([
+        $merged = array_merge([
             'clave'       => '',
             'area'        => '',
             'horas'       => 4,
@@ -63,17 +62,38 @@ class Materia
             'id_grupo'    => '',
             'ciclo_escolar'=> '',
         ], $row);
+
+        // Map DB fields to Form fields if they exist from DB
+        if (empty($merged['docente_id']) && !empty($merged['id_profesor'])) {
+            $merged['docente_id'] = $merged['id_profesor'];
+        }
+        if (empty($merged['salon_id']) && !empty($merged['id_salon'])) {
+            $merged['salon_id'] = $merged['id_salon'];
+        }
+        if (empty($merged['grupo_id']) && !empty($merged['id_grupo'])) {
+            $merged['grupo_id'] = $merged['id_grupo'];
+        }
+        if (empty($merged['ciclo_id']) && !empty($merged['ciclo_escolar'])) {
+            $merged['ciclo_id'] = $merged['ciclo_escolar'];
+        }
+        if (isset($row['cupo_maximo']) && !isset($row['horas'])) {
+            $merged['horas'] = $row['cupo_maximo'] > 0 ? $row['cupo_maximo'] : 4;
+        }
+
+        return $merged;
     }
 
     public function create($datos)
     {
         $st = $this->db->prepare(
-            "INSERT INTO materias (nombre, cupo_maximo, vigencia_inicio, vigencia_fin, id_profesor, id_salon, id_grupo, ciclo_escolar)
-             VALUES (?,?,?,?,?,?,?,?)"
+            "INSERT INTO materias (clave, nombre, cupo_maximo, grado, vigencia_inicio, vigencia_fin, id_profesor, id_salon, id_grupo, ciclo_escolar)
+             VALUES (?,?,?,?,?,?,?,?,?,?)"
         );
         $st->execute([
+            $datos['clave']  ?? null,
             $datos['nombre'],
             $datos['horas'] ?? ($datos['cupo_maximo'] ?? 0),
+            $datos['grado'] ?: null,
             $datos['vigencia_inicio'] ?? null,
             $datos['vigencia_fin']    ?? null,
             $datos['docente_id'] ?: null,
@@ -96,13 +116,20 @@ class Materia
 
     public function update($id, $datos)
     {
+        // Guardar el id_grupo ACTUAL antes de actualizar
+        $st_old = $this->db->prepare("SELECT id_grupo FROM materias WHERE id_materia = ?");
+        $st_old->execute([$id]);
+        $old_grupo_id = $st_old->fetchColumn();
+
         $st = $this->db->prepare(
-            "UPDATE materias SET nombre=?, cupo_maximo=?, vigencia_inicio=?, vigencia_fin=?, id_profesor=?, id_salon=?, id_grupo=?, ciclo_escolar=?
+            "UPDATE materias SET clave=?, nombre=?, cupo_maximo=?, grado=?, vigencia_inicio=?, vigencia_fin=?, id_profesor=?, id_salon=?, id_grupo=?, ciclo_escolar=?
              WHERE id_materia=?"
         );
         $result = $st->execute([
+            $datos['clave']  ?? null,
             $datos['nombre'],
             $datos['horas'] ?? ($datos['cupo_maximo'] ?? 0),
+            $datos['grado'] ?: null,
             $datos['vigencia_inicio'] ?? null,
             $datos['vigencia_fin']    ?? null,
             $datos['docente_id'] ?: null,
@@ -112,16 +139,42 @@ class Materia
             $id
         ]);
 
-        if ($result && !empty($datos['grupo_id'])) {
-            $st_ins = $this->db->prepare(
-                "INSERT IGNORE INTO inscripciones (id_alumno, id_materia, estado, fecha_inscripcion) 
-                 SELECT id_alumno, ?, 1, NOW() FROM alumno_grupo WHERE id_grupo = ?"
-            );
-            $st_ins->execute([$id, $datos['grupo_id']]);
+        $new_grupo_id = $datos['grupo_id'] ?: null;
+
+        if ($result) {
+            // Si el grupo cambió, eliminar inscripciones del grupo ANTERIOR (y sus calificaciones)
+            if ($old_grupo_id && $old_grupo_id != $new_grupo_id) {
+                // Primero: borrar calificaciones de esas inscripciones
+                $st_cal = $this->db->prepare(
+                    "DELETE c FROM calificaciones c
+                     JOIN inscripciones i ON c.id_inscripcion = i.id_inscripcion
+                     JOIN alumno_grupo ag ON ag.id_alumno = i.id_alumno
+                     WHERE i.id_materia = ? AND ag.id_grupo = ?"
+                );
+                $st_cal->execute([$id, $old_grupo_id]);
+
+                // Luego: borrar las inscripciones
+                $st_del = $this->db->prepare(
+                    "DELETE i FROM inscripciones i
+                     JOIN alumno_grupo ag ON ag.id_alumno = i.id_alumno
+                     WHERE i.id_materia = ? AND ag.id_grupo = ?"
+                );
+                $st_del->execute([$id, $old_grupo_id]);
+            }
+
+            // Si hay grupo nuevo asignado, inscribir a los alumnos que aún no estén inscritos
+            if (!empty($new_grupo_id)) {
+                $st_ins = $this->db->prepare(
+                    "INSERT IGNORE INTO inscripciones (id_alumno, id_materia, estado, fecha_inscripcion)
+                     SELECT id_alumno, ?, 1, NOW() FROM alumno_grupo WHERE id_grupo = ?"
+                );
+                $st_ins->execute([$id, $new_grupo_id]);
+            }
         }
 
         return $result;
     }
+
 
     public function delete($id)
     {

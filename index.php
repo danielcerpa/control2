@@ -10,7 +10,7 @@ spl_autoload_register(function ($className) {
   }
 
   $map = [
-    'AlumnoController' => 'alumno/logica.php',
+    'Portal_alumnoController' => 'portal_alumno/logica.php',
     'AlumnosController' => 'alumnos/logica.php',
     'AuthController' => 'auth/logica.php',
     'CalificacionesController' => 'calificaciones/logica.php',
@@ -20,19 +20,21 @@ spl_autoload_register(function ($className) {
     'HorariosController' => 'horarios/logica.php',
     'InscripcionesController' => 'inscripciones/logica.php',
     'MateriasController' => 'materias/logica.php',
+    'ConfiguracionController' => 'configuracion/logica.php',
     'ReportesController' => 'reportes/logica.php',
     'CiclosController'   => 'ciclos/logica.php',
     'SalonesController'  => 'salones/logica.php',
     'UsuariosController' => 'usuarios/logica.php',
 
     'Alumno' => 'alumnos/conexion.php',
-    'AlumnoPortal' => 'alumno/conexion.php',
+    'AlumnoPortal' => 'portal_alumno/conexion.php',
     'Calificacion' => 'calificaciones/conexion.php',
     'Docente' => 'docentes/conexion.php',
     'Grupo' => 'grupos/conexion.php',
     'Horario' => 'horarios/conexion.php',
     'Inscripcion' => 'inscripciones/conexion.php',
     'Materia' => 'materias/conexion.php',
+    'Configuracion' => 'configuracion/conexion.php',
     'Reporte' => 'reportes/conexion.php',
     'CicloEscolar' => 'ciclos/conexion.php',
     'Salon'        => 'salones/conexion.php',

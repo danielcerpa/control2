@@ -1,4 +1,16 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $u
+ * @var array|null $alumno
+ * @var array|null $grupo
+ * @var array|null $ciclo
+ * @var array $ultimas_calificaciones
+ * @var int $total_materias
+ * @var int $materias_aprobadas
+ * @var int $materias_reprobadas
+ * @var float $promedio_general
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -75,13 +87,13 @@
         <?php echo $total_materias; ?> Materia<?php echo $total_materias !== 1 ? 's' : ''; ?> inscrita<?php echo $total_materias !== 1 ? 's' : ''; ?>
     </div>
     <?php if ($materias_aprobadas > 0 || $materias_reprobadas > 0): ?>
-    <div class="alumno-stat-chip" style="background:#f0fdf4; border-color:#bbf7d0; color:#15803d;">
-        <span class="material-symbols-outlined" style="color:#16a34a; font-size:16px;">check_circle</span>
+    <div class="alumno-stat-chip stat-chip-aprobado">
+        <span class="material-symbols-outlined text-success" style="font-size:16px;">check_circle</span>
         <?php echo $materias_aprobadas; ?> aprobada<?php echo $materias_aprobadas !== 1 ? 's' : ''; ?>
     </div>
     <?php if ($materias_reprobadas > 0): ?>
-    <div class="alumno-stat-chip" style="background:#fef2f2; border-color:#fecaca; color:#991b1b;">
-        <span class="material-symbols-outlined" style="color:#dc2626; font-size:16px;">cancel</span>
+    <div class="alumno-stat-chip stat-chip-reprobado">
+        <span class="material-symbols-outlined text-danger" style="font-size:16px;">cancel</span>
         <?php echo $materias_reprobadas; ?> reprobada<?php echo $materias_reprobadas !== 1 ? 's' : ''; ?>
     </div>
     <?php endif; ?>
@@ -90,14 +102,14 @@
 
 <!-- ===== ACCESOS RÁPIDOS ===== -->
 <div class="mb-4">
-    <h5 class="font-weight-bold text-dark mb-3" style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;">
+    <h5 class="font-weight-bold mb-3" style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;">
         <span class="material-symbols-outlined mr-2" style="font-size: 20px; color: #94a3b8;">apps</span>
         Mi espacio
     </h5>
     <div class="row" style="gap: 0;">
         <!-- Horario -->
         <div class="col-md-4 mb-3">
-            <a href="<?php echo BASE_URL; ?>alumno/horario" class="alumno-nav-card card-horario h-100">
+            <a href="<?php echo BASE_URL; ?>portal_alumno/horario" class="alumno-nav-card card-horario h-100">
                 <div class="nav-card-icon">
                     <span class="material-symbols-outlined" style="font-size: 30px;">calendar_month</span>
                 </div>
@@ -107,7 +119,7 @@
         </div>
         <!-- Calificaciones -->
         <div class="col-md-4 mb-3">
-            <a href="<?php echo BASE_URL; ?>alumno/calificaciones" class="alumno-nav-card card-calificaciones h-100">
+            <a href="<?php echo BASE_URL; ?>portal_alumno/calificaciones" class="alumno-nav-card card-calificaciones h-100">
                 <div class="nav-card-icon">
                     <span class="material-symbols-outlined" style="font-size: 30px;">history_edu</span>
                 </div>
@@ -117,7 +129,7 @@
         </div>
         <!-- Materias -->
         <div class="col-md-4 mb-3">
-            <a href="<?php echo BASE_URL; ?>alumno/materias" class="alumno-nav-card card-materias h-100">
+            <a href="<?php echo BASE_URL; ?>portal_alumno/materias" class="alumno-nav-card card-materias h-100">
                 <div class="nav-card-icon">
                     <span class="material-symbols-outlined" style="font-size: 30px;">menu_book</span>
                 </div>
@@ -131,7 +143,7 @@
 <!-- ===== ACTIVIDAD RECIENTE: últimas calificaciones ===== -->
 <?php if (!empty($ultimas_calificaciones)): ?>
 <div class="card border-0 shadow-sm" style="border-radius:14px; overflow:hidden;">
-    <div class="card-header bg-white font-weight-bold">
+    <div class="card-header font-weight-bold">
         <span class="material-symbols-outlined mr-2 text-success" style="font-size:20px;">timeline</span>
         Últimas calificaciones registradas
     </div>
@@ -140,27 +152,27 @@
             <thead>
                 <tr style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
                     <th class="pl-4" style="color:#94a3b8; font-weight:600;">Materia</th>
-                    <th class="text-center" style="color:#94a3b8; font-weight:600;">Período</th>
-                    <th class="text-center" style="color:#94a3b8; font-weight:600;">Calificación</th>
+                    <th class="text-center" style="color:#94a3b8; font-weight:600;">P1</th>
+                    <th class="text-center" style="color:#94a3b8; font-weight:600;">P2</th>
+                    <th class="text-center" style="color:#94a3b8; font-weight:600;">P3</th>
+                    <th class="text-center" style="color:#94a3b8; font-weight:600;">Final</th>
                     <th class="text-center" style="color:#94a3b8; font-weight:600;">Estado</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($ultimas_calificaciones as $c): ?>
                 <tr>
-                    <td class="pl-4 font-weight-bold" style="color:#334155;"><?php echo e($c['materia']); ?></td>
-                    <td class="text-center">
-                        <span class="badge" style="background:#eff6ff; color:#1e40af; border-radius:20px; padding:4px 12px; font-size:11px;">
-                            <?php echo e($c['etiqueta_periodo'] ?? 'N/A'); ?>
-                        </span>
+                    <td class="pl-4 font-weight-bold"><?php echo e($c['materia']); ?></td>
+                    <td class="text-center"><?php echo $c['p1'] !== null ? number_format(floatval($c['p1']), 1) : '—'; ?></td>
+                    <td class="text-center"><?php echo $c['p2'] !== null ? number_format(floatval($c['p2']), 1) : '—'; ?></td>
+                    <td class="text-center"><?php echo $c['p3'] !== null ? number_format(floatval($c['p3']), 1) : '—'; ?></td>
+                    <td class="text-center font-weight-bold">
+                        <?php echo $c['final'] !== null ? number_format(floatval($c['final']), 1) : '—'; ?>
                     </td>
                     <td class="text-center align-middle">
-                        <div class="score-circle <?php echo ($c['puntaje'] >= 6) ? 'aprobado' : 'reprobado'; ?>" style="width:40px; height:40px; font-size:0.9rem;">
-                            <?php echo number_format($c['puntaje'], 1); ?>
-                        </div>
-                    </td>
-                    <td class="text-center align-middle">
-                        <?php if ($c['puntaje'] >= 6): ?>
+                        <?php if ($c['final'] === null): ?>
+                            <span class="badge-cursando">CURSANDO</span>
+                        <?php elseif (floatval($c['final']) >= 6): ?>
                             <span class="cal-badge-aprobado">
                                 <span class="material-symbols-outlined">check_circle</span> APROBADO
                             </span>
@@ -176,8 +188,8 @@
         </table>
     </div>
     <?php if (count($ultimas_calificaciones) >= 3): ?>
-    <div class="card-footer bg-white text-center border-0 pb-3">
-        <a href="<?php echo BASE_URL; ?>alumno/calificaciones" class="btn btn-sm btn-outline-success" style="border-radius:8px;">
+    <div class="card-footer text-center border-0 pb-3" style="background: transparent;">
+        <a href="<?php echo BASE_URL; ?>portal_alumno/calificaciones" class="btn btn-sm btn-outline-success" style="border-radius:8px;">
             <span class="material-symbols-outlined mr-1" style="font-size:16px;">open_in_new</span>
             Ver todas las calificaciones
         </a>

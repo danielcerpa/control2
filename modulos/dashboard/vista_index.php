@@ -99,7 +99,7 @@ include 'includes/header.php';
                                                 <?php echo substr($h['hora_inicio'], 0, 5); ?> – <?php echo substr($h['hora_fin'], 0, 5); ?>
                                             </td>
                                             <td><?php echo e($h['materia']); ?></td>
-                                            <td><?php echo e($h['grupo']); ?></td>
+                                            <td><?php echo e($h['grado'] . $h['seccion']); ?></td>
                                             <td><?php echo e($h['salon']); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -152,6 +152,69 @@ include 'includes/header.php';
             </div>
         </div>
     </div>
+
+    <!-- ══════════ MATERIAS ASIGNADAS ══════════ -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <span class="material-symbols-outlined mr-2 text-info" style="font-size:20px;">menu_book</span>Mis Materias Asignadas
+                </div>
+                <div class="card-body p-0">
+                    <?php if (!empty($mis_materias)): ?>
+                        <div class="table-responsive border-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Materia</th>
+                                        <th>Grupo</th>
+                                        <th>Salón</th>
+                                        <th>Horarios</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($mis_materias as $mat): ?>
+                                        <tr>
+                                            <td class="align-middle font-weight-bold"><?php echo e($mat['materia']); ?></td>
+                                            <td class="align-middle">
+                                                <?php if (!empty($mat['grado']) && !empty($mat['seccion'])): ?>
+                                                    <span class="badge badge-light border border-secondary"><?php echo e($mat['grado'] . ' ' . $mat['seccion']); ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted small">Sin grupo asignado</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="align-middle">
+                                                <?php echo !empty($mat['salon']) ? e($mat['salon']) : '<span class="text-muted small">Sin asignar</span>'; ?>
+                                            </td>
+                                            <td class="align-middle">
+                                                <?php if (!empty($mat['horarios'])): ?>
+                                                    <ul class="list-unstyled mb-0 small">
+                                                    <?php foreach ($mat['horarios'] as $h): ?>
+                                                        <li>
+                                                            <span class="font-weight-bold text-secondary"><?php echo substr($h['dia'], 0, 3); ?>:</span> 
+                                                            <?php echo substr($h['hora_inicio'], 0, 5) . ' - ' . substr($h['hora_fin'], 0, 5); ?>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                    </ul>
+                                                <?php else: ?>
+                                                    <span class="text-muted small">Sin horario definido</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-4 text-center text-muted">
+                            <span class="material-symbols-outlined mb-2" style="font-size:48px; opacity:0.3;">menu_book</span>
+                            <p class="mt-2 mb-0">Actualmente no tienes materias asignadas.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 <?php endif; ?>
 
 <?php if ($u['rol'] === 'alumno'): ?>
@@ -175,13 +238,13 @@ include 'includes/header.php';
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6 mb-3">
-                            <a href="<?php echo BASE_URL; ?>alumno/horario" class="quick-card">
+                            <a href="<?php echo BASE_URL; ?>portal_alumno/horario" class="quick-card">
                                 <span class="material-symbols-outlined mb-2" style="font-size:32px;">calendar_month</span>
                                 <span>Mi Horario</span>
                             </a>
                         </div>
                         <div class="col-6 mb-3">
-                            <a href="<?php echo BASE_URL; ?>alumno/calificaciones" class="quick-card">
+                            <a href="<?php echo BASE_URL; ?>portal_alumno/calificaciones" class="quick-card">
                                 <span class="material-symbols-outlined mb-2" style="font-size:32px;">grade</span>
                                 <span>Mis Calificaciones</span>
                             </a>

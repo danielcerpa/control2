@@ -9,6 +9,18 @@ function require_auth()
         exit;
     }
 
+    // Verificar en tiempo real si la cuenta sigue activa
+    $pdo = db_connect();
+    $st = $pdo->prepare("SELECT estado FROM usuarios WHERE id_usuario = ?");
+    $st->execute([$_SESSION['usuario_id']]);
+    $estado_actual = $st->fetchColumn();
+
+    if (!$estado_actual) {
+        session_destroy();
+        header('Location: ' . BASE_URL . 'index.php?error=cuenta_inactiva');
+        exit;
+    }
+
     // Prevenir caché de la página para que no se pueda regresar tras cerrar sesión
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Cache-Control: post-check=0, pre-check=0', false);
@@ -34,7 +46,7 @@ function session_user()
 }
 
 // ¿El usuario tiene acceso a un módulo?
-function puede_ver($modulo)
+function puede_ver(string $modulo)
 {
     $u = session_user();
     if (!$u) return false;
@@ -57,5 +69,14 @@ function solo_director()
     if (!$u || $u['rol'] !== 'director') {
         header('Location: ' . BASE_URL . 'dashboard.php');
         exit;
+    }
+}
+
+// Requiere permiso explícito para acceder al módulo
+function require_perm(string $modulo)
+{
+    require_auth();
+    if (!puede_ver($modulo)) {
+        redirect(BASE_URL . 'dashboard', 'No tiene permisos para acceder a esta sección.', 'danger');
     }
 }

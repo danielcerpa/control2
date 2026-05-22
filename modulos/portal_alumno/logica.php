@@ -1,7 +1,7 @@
 <?php
-// modulos/alumno/logica.php — Controlador AlumnoController
+// modulos/portal_alumno/logica.php — Controlador Portal_alumnoController
 
-class AlumnoController extends Controller
+class Portal_alumnoController extends Controller
 {
     private $portalModel;
 
@@ -69,7 +69,7 @@ class AlumnoController extends Controller
         }
         $promedio_general = $con_calificacion > 0 ? $suma_promedio / $con_calificacion : 0;
 
-        $this->view('alumno/perfil', [
+        $this->view('portal_alumno/perfil', [
             'u'                     => $u,
             'alumno'                => $alumno,
             'grupo'                 => $grupo,
@@ -106,7 +106,7 @@ class AlumnoController extends Controller
             }
         }
 
-        $this->view('alumno/horario', [
+        $this->view('portal_alumno/horario', [
             'grid'          => $grid,
             'dias'          => $dias,
             'ciclo'         => $ciclo,
@@ -131,14 +131,14 @@ class AlumnoController extends Controller
         $suma = 0;
         $cnt  = 0;
         foreach ($calificaciones as $c) {
-            if ($c['puntaje'] !== null) {
-                $suma += $c['puntaje'];
+            if ($c['final'] !== null) {
+                $suma += $c['final'];
                 $cnt++;
             }
         }
         $promedio = $cnt > 0 ? $suma / $cnt : 0;
 
-        $this->view('alumno/calificaciones', [
+        $this->view('portal_alumno/calificaciones', [
             'calificaciones' => $calificaciones,
             'promedio'       => $promedio,
             'ciclo'          => $ciclo,
@@ -158,12 +158,40 @@ class AlumnoController extends Controller
         $materias = $alumno_id ? $this->portalModel->getMaterias($alumno_id) : [];
         $grupo    = $alumno_id ? $this->portalModel->getGrupo($alumno_id)    : null;
 
-        $this->view('alumno/materias', [
+        $this->view('portal_alumno/materias', [
             'materias'      => $materias,
             'grupo'         => $grupo,
             'ciclo'         => $ciclo,
             'page_title'    => 'Mis Materias',
             'modulo_activo' => 'mis_materias',
+        ]);
+    }
+
+    // ----------------------------------------------------------------
+    // Kardex imprimible
+    // ----------------------------------------------------------------
+    public function kardex()
+    {
+        $ciclo      = ciclo_activo();
+        $alumno_id  = $this->getAlumnoId();
+
+        $alumno         = $alumno_id ? $this->portalModel->getAlumno($alumno_id)         : null;
+        $grupo          = $alumno_id ? $this->portalModel->getGrupo($alumno_id)           : null;
+        $calificaciones = $alumno_id ? $this->portalModel->getCalificaciones($alumno_id, $ciclo['id'] ?? null) : [];
+
+        $suma = 0; $cnt = 0;
+        foreach ($calificaciones as $c) {
+            if ($c['final'] !== null) { $suma += $c['final']; $cnt++; }
+        }
+        $promedio = $cnt > 0 ? $suma / $cnt : 0;
+
+        $this->view('portal_alumno/kardex', [
+            'alumno'         => $alumno,
+            'grupo'          => $grupo,
+            'ciclo'          => $ciclo,
+            'calificaciones' => $calificaciones,
+            'promedio'       => $promedio,
+            'page_title'     => 'Kardex',
         ]);
     }
 }

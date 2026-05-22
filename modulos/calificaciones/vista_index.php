@@ -17,7 +17,7 @@
 <!-- Filtros -->
 <div class="filter-bar pr-3">
     <form method="get" action="<?php echo BASE_URL; ?>calificaciones" class="form-row align-items-end" id="filtro-form">
-        <div class="col-12 col-md-5 mb-2 mb-md-0">
+        <div class="col-12 col-md-4 mb-2 mb-md-0">
             <label class="small font-weight-bold text-secondary text-uppercase" style="letter-spacing:1px;">Grupo</label>
             <select name="grupo" id="sel-grupo" class="form-control" onchange="this.form.submit()" style="border-radius:8px;">
                 <option value="0">Seleccionar grupo...</option>
@@ -26,7 +26,7 @@
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-12 col-md-5 mb-2 mb-md-0">
+        <div class="col-12 col-md-4 mb-2 mb-md-0">
             <label class="small font-weight-bold text-secondary text-uppercase" style="letter-spacing:1px;">Materia</label>
             <select name="materia" id="sel-materia" class="form-control" onchange="this.form.submit()" style="border-radius:8px;">
                 <option value="0"><?php echo $filtro_grupo ? 'Seleccionar materia...' : 'Primero selecciona un grupo'; ?></option>
@@ -35,7 +35,16 @@
                 <?php endforeach; ?>
             </select>
         </div>
+        <div class="col-12 col-md-2 mb-2 mb-md-0">
+            <label class="small font-weight-bold text-secondary text-uppercase" style="letter-spacing:1px;">Parcial</label>
+            <select name="parcial" class="form-control" onchange="this.form.submit()" style="border-radius:8px;">
+                <?php foreach (['P1' => 'Parcial 1', 'P2' => 'Parcial 2', 'P3' => 'Parcial 3'] as $val => $label): ?>
+                    <option value="<?php echo $val; ?>" <?php if ($filtro_parcial === $val) echo 'selected'; ?>><?php echo $label; ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
         <div class="col-12 col-md-2">
+            <label class="small font-weight-bold text-secondary text-uppercase" style="letter-spacing:1px; opacity:0;">-</label>
             <a href="<?php echo BASE_URL; ?>calificaciones" class="btn btn-outline-secondary btn-block" style="border-radius:8px;">
                 <span class="material-symbols-outlined" style="font-size:20px; vertical-align:middle;">restart_alt</span>
             </a>
@@ -48,25 +57,30 @@
         <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
             <h5 class="font-weight-bold mb-0">
                 <span class="material-symbols-outlined mr-2" style="font-size:20px; vertical-align:middle; color:#10b981;">edit_square</span>
-                Lista de Alumnos <span class="badge badge-indigo ml-2" style="background:#eef2ff; color:#4338ca; border:none;"><?php echo count($alumnos); ?></span>
+                Lista de Alumnos — <span class="badge" style="background:#eef2ff; color:#4338ca; border-radius:8px; padding:4px 12px; font-size:13px;"><?php echo ['P1'=>'Parcial 1','P2'=>'Parcial 2','P3'=>'Parcial 3'][$filtro_parcial]; ?></span>
+                <span class="badge badge-indigo ml-2" style="background:#f1f5f9; color:#475569; border:none;"><?php echo count($alumnos); ?> alumnos</span>
             </h5>
             <div class="text-secondary small font-weight-bold">
-                Promedio Grupal: <span id="promedio-badge" class="badge badge-info p-2" style="border-radius:6px; font-size:14px;">—</span>
+                Promedio Final Grupal: <span id="promedio-badge" class="badge badge-info p-2" style="border-radius:6px; font-size:14px;">—</span>
             </div>
         </div>
         <div class="card-body p-0">
             <form method="post" action="<?php echo BASE_URL; ?>calificaciones">
                 <input type="hidden" name="grupo_id" value="<?php echo $filtro_grupo; ?>">
                 <input type="hidden" name="materia_id" value="<?php echo $filtro_materia; ?>">
+                <input type="hidden" name="parcial" value="<?php echo e($filtro_parcial); ?>">
 
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr class="text-uppercase" style="font-size:11px; letter-spacing:1px; background:#f8fafc;">
-                                <th class="pl-4" style="width:60px;">#</th>
+                                <th class="pl-4" style="width:50px;">#</th>
                                 <th>Alumno</th>
-                                <th style="width:180px;">Calificación (0–10)</th>
-                                <th style="width:140px;">Estatus</th>
+                                <th class="text-center" style="width:110px;">P1</th>
+                                <th class="text-center" style="width:110px;">P2</th>
+                                <th class="text-center" style="width:110px;">P3</th>
+                                <th class="text-center" style="width:110px; background:#eff6ff; color:#1e40af;">Final</th>
+                                <th class="text-center" style="width:120px;">Estatus</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -78,20 +92,33 @@
                                         <div class="font-weight-bold" style="color:#334155;"><?php echo e($al['nombre_completo']); ?></div>
                                         <small class="text-muted"><?php echo e($al['matricula']); ?></small>
                                     </td>
-                                    <td class="align-middle">
-                                        <input type="number"
-                                            name="calificaciones[<?php echo $al['id_inscripcion']; ?>]"
-                                            class="form-control cal-input"
-                                            value="<?php echo ($al['puntaje'] !== null ? number_format(floatval($al['puntaje']), 1) : ''); ?>"
-                                            min="0" max="10" step="0.1"
-                                            placeholder="—"
-                                            style="border-radius:8px; font-weight:bold; color:#197fe6;">
+                                    <?php foreach (['p1','p2','p3'] as $parcial_col): ?>
+                                        <td class="align-middle text-center">
+                                            <?php if (strtolower($filtro_parcial) === $parcial_col): ?>
+                                                <input type="number"
+                                                    name="calificaciones[<?php echo $al['id_inscripcion']; ?>]"
+                                                    class="form-control cal-input text-center"
+                                                    value="<?php echo ($al[$parcial_col] !== null ? number_format(floatval($al[$parcial_col]), 1) : ''); ?>"
+                                                    min="0" max="10" step="0.1"
+                                                    placeholder="—"
+                                                    style="border-radius:8px; font-weight:bold; color:#197fe6; text-align:center;">
+                                            <?php else: ?>
+                                                <span class="<?php echo $al[$parcial_col] !== null ? ($al[$parcial_col] >= 6 ? 'text-success' : 'text-danger') : 'text-muted'; ?> font-weight-bold">
+                                                    <?php echo $al[$parcial_col] !== null ? number_format(floatval($al[$parcial_col]), 1) : '—'; ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endforeach; ?>
+                                    <td class="align-middle text-center" style="background:#f8fbff;">
+                                        <span class="font-weight-bold <?php echo $al['final'] !== null ? ($al['final'] >= 6 ? 'text-success' : 'text-danger') : 'text-muted'; ?>" style="font-size:15px;">
+                                            <?php echo $al['final'] !== null ? number_format(floatval($al['final']), 1) : '—'; ?>
+                                        </span>
                                     </td>
-                                    <td class="align-middle">
+                                    <td class="align-middle text-center">
                                         <?php
-                                        $v = $al['puntaje'] !== null ? floatval($al['puntaje']) : null;
+                                        $v = $al['final'] !== null ? floatval($al['final']) : null;
                                         if ($v === null) {
-                                            echo '<span class="text-muted small italic">Pendiente</span>';
+                                            echo '<span class="text-muted small">Pendiente</span>';
                                         } elseif ($v >= 9) {
                                             echo '<span class="status-pill status-excellent">Excelente</span>';
                                         } elseif ($v >= 8) {
@@ -99,7 +126,7 @@
                                         } elseif ($v >= 6) {
                                             echo '<span class="status-pill status-pass">Aprobado</span>';
                                         } else {
-                                            echo '<span class="status-pill status-fail">No Acreditado</span>';
+                                            echo '<span class="status-pill status-fail">Reprobado</span>';
                                         }
                                         ?>
                                     </td>
@@ -110,7 +137,8 @@
                 </div>
                 <div class="card-footer bg-white border-top-0 p-4 d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary" style="background:#197fe6; border:none; border-radius:8px; padding:12px 35px; font-weight:600; box-shadow: 0 4px 6px rgba(25, 127, 230, 0.2);">
-                        <span class="material-symbols-outlined mr-2" style="font-size:20px; vertical-align:middle;">save</span> Guardar Calificaciones
+                        <span class="material-symbols-outlined mr-2" style="font-size:20px; vertical-align:middle;">save</span>
+                        Guardar <?php echo ['P1'=>'Parcial 1','P2'=>'Parcial 2','P3'=>'Parcial 3'][$filtro_parcial]; ?>
                     </button>
                 </div>
             </form>
@@ -130,7 +158,7 @@
                 <span class="material-symbols-outlined text-primary" style="font-size:40px;">ads_click</span>
             </div>
             <h4 class="font-weight-bold text-dark mb-2">Comenzar Captura</h4>
-            <p class="text-secondary mx-auto" style="max-width:400px;">Seleccione el grupo y la materia arriba para cargar la lista de alumnos y registrar sus evaluaciones.</p>
+            <p class="text-secondary mx-auto" style="max-width:400px;">Seleccione el grupo, la materia y el parcial para cargar la lista de alumnos y registrar sus calificaciones.</p>
         </div>
     </div>
 <?php endif; ?>
@@ -140,63 +168,33 @@
         border-color: #197fe6;
         box-shadow: 0 0 0 3px rgba(25, 127, 230, 0.15);
     }
-
     .status-pill {
-        padding: 4px 12px;
+        padding: 4px 10px;
         border-radius: 20px;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-
-    .status-excellent {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .status-good {
-        background: #e0f2fe;
-        color: #075985;
-    }
-
-    .status-pass {
-        background: #fef9c3;
-        color: #854d0e;
-    }
-
-    .status-fail {
-        background: #fee2e2;
-        color: #991b1b;
-    }
+    .status-excellent { background: #dcfce7; color: #166534; }
+    .status-good      { background: #e0f2fe; color: #075985; }
+    .status-pass      { background: #fef9c3; color: #854d0e; }
+    .status-fail      { background: #fee2e2; color: #991b1b; }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('.cal-input');
+        // Calcular promedio de la columna FINAL
+        const finales = document.querySelectorAll('td[style*="f8fbff"] span');
         const promedioBadge = document.getElementById('promedio-badge');
-
-        function updatePromedio() {
-            let sum = 0;
-            let count = 0;
-            inputs.forEach(input => {
-                if (input.value !== '') {
-                    sum += parseFloat(input.value);
-                    count++;
-                }
+        if (promedioBadge) {
+            let sum = 0, count = 0;
+            finales.forEach(el => {
+                const v = parseFloat(el.textContent);
+                if (!isNaN(v)) { sum += v; count++; }
             });
-            if (count > 0) {
-                promedioBadge.textContent = (sum / count).toFixed(2);
-            } else {
-                promedioBadge.textContent = '—';
-            }
+            promedioBadge.textContent = count > 0 ? (sum / count).toFixed(2) : '—';
         }
-
-        inputs.forEach(input => {
-            input.addEventListener('input', updatePromedio);
-        });
-
-        if (inputs.length > 0) updatePromedio();
     });
 </script>
 

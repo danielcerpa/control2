@@ -1,3 +1,16 @@
+<?php
+/**
+ * Variables inyectadas por Controller::view() via extract($data):
+ * @var array       $alumno          Datos del alumno
+ * @var array|null  $grupo           Grupo asignado al alumno
+ * @var array       $calificaciones  Calificaciones del alumno
+ * @var float       $promedio        Promedio final calculado
+ */
+
+// Cargar la configuración de la institución para el encabezado
+$nombre_institucion = get_config('nombre_institucion') ?: 'Colegio Control Escolar';
+$cct_institucion    = get_config('cct_institucion');
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -134,7 +147,7 @@
 
     <div class="boleta-outer">
         <div class="header">
-            <div class="school-name">COLEGIO CONTROL ESCOLAR PHP</div>
+            <div class="school-name"><?php echo e($nombre_institucion); ?></div>
             <div class="doc-title">BOLETA OFICIAL DE CALIFICACIONES</div>
         </div>
 
@@ -155,22 +168,34 @@
             <thead>
                 <tr>
                     <th>ASIGNATURA / MATERIA</th>
-                    <th style="width: 120px; text-align: center;">CALIFICACIÓN</th>
-                    <th style="width: 160px; text-align: center;">VALORACIÓN</th>
+                    <th style="width: 60px; text-align: center;">P1</th>
+                    <th style="width: 60px; text-align: center;">P2</th>
+                    <th style="width: 60px; text-align: center;">P3</th>
+                    <th style="width: 80px; text-align: center; background:#f2f2f2;">FINAL</th>
+                    <th style="width: 120px; text-align: center;">VALORACIÓN</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (!$calificaciones): ?>
                     <tr>
-                        <td colspan="3" style="text-align: center; padding: 30px;">No se registran calificaciones para el alumno en el ciclo actual.</td>
+                        <td colspan="6" style="text-align: center; padding: 30px;">No se registran calificaciones para el alumno en el ciclo actual.</td>
                     </tr>
                 <?php endif; ?>
                 <?php foreach ($calificaciones as $c): ?>
                     <tr>
-                        <td style="font-weight: 600;"><?php echo e($c['materia']); ?> <br><small><?php echo e($c['etiqueta_periodo'] ?? ''); ?></small></td>
-                        <td style="text-align: center; font-size: 16px; font-weight: 800;"><?php echo number_format($c['puntaje'], 1); ?></td>
+                        <td style="font-weight: 600;"><?php echo e($c['materia']); ?></td>
+                        <?php foreach (['p1','p2','p3'] as $col): ?>
+                        <td style="text-align: center;">
+                            <?php echo $c[$col] !== null ? number_format(floatval($c[$col]), 1) : '—'; ?>
+                        </td>
+                        <?php endforeach; ?>
+                        <td style="text-align: center; font-size: 16px; font-weight: 800; background:#f9f9f9;">
+                            <?php echo $c['final'] !== null ? number_format(floatval($c['final']), 1) : '—'; ?>
+                        </td>
                         <td style="text-align: center; font-size: 11px;">
-                            <?php if ($c['puntaje'] >= 6): ?>
+                            <?php if ($c['final'] === null): ?>
+                                <span style="color:#666;">PENDIENTE</span>
+                            <?php elseif (floatval($c['final']) >= 6): ?>
                                 <span class="status-pass">ACREDITADA</span>
                             <?php else: ?>
                                 <span class="status-fail">NO ACREDITADA</span>

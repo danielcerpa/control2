@@ -28,7 +28,7 @@
             <div class="card-body">
                 <div class="form-group">
                     <label class="small font-weight-bold">Nombre del Ciclo</label>
-                    <input type="text" name="nombre" id="f_nombre" class="form-control" required style="border-radius:8px;">
+                    <input type="text" name="nombre" id="f_nombre" class="form-control" required pattern="[a-zA-Z0-9\-\(\)\s]+" title="Solo letras, números, guiones, paréntesis y espacios" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\(\)\s]/g, '');" style="border-radius:8px;">
                 </div>
                 <div class="row">
                     <div class="col-md-6">

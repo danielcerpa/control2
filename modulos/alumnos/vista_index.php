@@ -1,4 +1,10 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $filtros
+ * @var array $grupos
+ * @var array $alumnos
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -14,12 +20,6 @@
     </div>
     <?php if (puede_ver('alumnos') && ($GLOBALS['_SESSION']['usuario_rol'] ?? '') !== 'profesor'): ?>
         <div class="d-flex">
-            <a href="<?php echo BASE_URL; ?>alumnos/search_delete" class="btn btn-outline-danger mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-                <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">delete</span> Borrar Alumno
-            </a>
-            <a href="<?php echo BASE_URL; ?>alumnos/search_edit" class="btn btn-outline-primary mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-                <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">edit</span> Editar Alumno
-            </a>
             <a href="<?php echo BASE_URL; ?>alumnos/create" class="btn btn-primary" style="background:#197fe6; border:none; border-radius:8px; padding: 10px 20px; font-weight:600;">
                 <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">person_add</span> Nuevo Alumno
             </a>
@@ -86,6 +86,7 @@
                         <th>CURP</th>
                         <th>Sexo</th>
                         <th>Estado</th>
+                        <th class="text-right pr-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -101,11 +102,11 @@
                         <tr>
                             <td class="pl-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-circle mr-3" style="width:40px; height:40px; background:#f1f5f9; border:1px solid #e2e8f0;">
+                                    <div class="avatar-circle mr-3">
                                         <?php if ($a['ruta_foto']): ?>
                                             <img src="<?php echo e($a['ruta_foto']); ?>" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
                                         <?php else: ?>
-                                            <span style="color:#64748b;"><?php echo strtoupper(substr($a['nombre'], 0, 1)); ?></span>
+                                            <span><?php echo strtoupper(substr($a['nombre'], 0, 1)); ?></span>
                                         <?php endif; ?>
                                     </div>
                                     <div>
@@ -132,6 +133,18 @@
                                 ?>
                                 <span class="badge badge-<?php echo $badge; ?>"><?php echo e($a['estado']); ?></span>
                             </td>
+                            <td class="text-right pr-4">
+                                <?php if (puede_ver('alumnos') && ($GLOBALS['_SESSION']['usuario_rol'] ?? '') !== 'profesor'): ?>
+                                    <div class="btn-group">
+                                        <a href="<?php echo BASE_URL; ?>alumnos/edit/<?php echo $a['id_alumno']; ?>" class="btn btn-sm btn-outline-primary" title="Editar" style="border-radius:6px 0 0 6px;">
+                                            <span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">edit</span>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="confirmDeleteAlumno(<?php echo $a['id_alumno']; ?>, '<?php echo addslashes($a['nombre'] . ' ' . $a['apellido_paterno']); ?>')" style="border-radius:0 6px 6px 0;">
+                                            <span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">delete</span>
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
 
                         </tr>
                     <?php endforeach; ?>
@@ -140,6 +153,31 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmDeleteAlumno(id, nombre) {
+    Swal.fire({
+        title: '¿Dar de baja alumno?',
+        html: 'Se cambiará el estado de <strong>' + nombre + '</strong> a Inactivo. Su historial académico y acceso al sistema se conservarán.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, dar de baja',
+        cancelButtonText: 'Cancelar',
+        customClass: {
+            popup: 'rounded-xl shadow-lg border-0',
+            confirmButton: 'font-weight-bold px-4 rounded-lg',
+            cancelButton: 'font-weight-bold px-4 rounded-lg'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?php echo BASE_URL; ?>alumnos/delete/' + id;
+        }
+    })
+}
+</script>
 
 
 

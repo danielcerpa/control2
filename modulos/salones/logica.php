@@ -3,11 +3,12 @@
 
 class SalonesController extends Controller
 {
+    /** @var Salon */
     private $salonModel;
 
     public function __construct()
     {
-        require_auth();
+        require_perm('salones');
         $this->salonModel = new Salon();
     }
 
@@ -34,24 +35,10 @@ class SalonesController extends Controller
         ]);
     }
 
-    public function search_edit()
-    {
-        $salones = $this->salonModel->getAll();
-        $this->view('salones/search_edit', [
-            'salones' => $salones
-        ]);
-    }
-
-    public function search_delete()
-    {
-        $salones = $this->salonModel->getAll();
-        $this->view('salones/search_delete', [
-            'salones' => $salones
-        ]);
-    }
 
     public function create()
     {
+        $edificios_validos = ['Edificio Principal', 'Edificio A', 'Edificio B', 'Edificio C', 'Anexo', 'Laboratorios'];
         $errors = [];
         $datos  = [
             'nombre' => '', 'edificio' => '', 'tipo' => 'Aula',
@@ -65,28 +52,53 @@ class SalonesController extends Controller
                 'tipo'        => $_POST['tipo']             ?? 'Aula',
                 'capacidad'   => (int) ($_POST['capacidad'] ?? 0),
                 'estado'      => $_POST['estado']           ?? 'Activo',
-                'descripcion' => trim($_POST['descripcion'] ?? ''),
+                'descripcion' => strip_tags(trim($_POST['descripcion'] ?? '')),
             ];
 
             if ($datos['nombre'] === '') {
                 $errors[] = 'El nombre del salón es obligatorio.';
+            } elseif (!preg_match('/^[A-Za-z0-9\-\s]+$/', $datos['nombre'])) {
+                $errors[] = 'El nombre solo debe aceptar letras, números, espacios y "-".';
+            }
+
+            if ($datos['edificio'] === '' || !in_array($datos['edificio'], $edificios_validos)) {
+                $errors[] = 'Debe seleccionar un edificio válido.';
+            }
+
+            if ($datos['capacidad'] <= 0) {
+                $errors[] = 'La capacidad debe ser mayor a 0.';
+            } elseif ($datos['capacidad'] > 40) {
+                $errors[] = 'La capacidad máxima de cada salón es de 40 alumnos.';
+            }
+
+            if (empty($errors)) {
+                $db = db_connect();
+                $st = $db->prepare("SELECT id_salon FROM salones WHERE nombre = ?");
+                $st->execute([$datos['nombre']]);
+                if ($st->fetch()) {
+                    $errors[] = 'Ya existe un salón con ese nombre.';
+                }
             }
 
             if (empty($errors)) {
                 $this->salonModel->create($datos);
-                header('Location: ' . BASE_URL . 'salones');
-                exit;
+                redirect(BASE_URL . 'salones', 'Salón creado correctamente');
             }
         }
 
         $this->view('salones/create', [
             'errors' => $errors,
             'datos'  => $datos,
+            'edificios_validos' => $edificios_validos,
         ]);
     }
 
+    /**
+     * @param int|string $id
+     */
     public function edit($id)
     {
+        $edificios_validos = ['Edificio Principal', 'Edificio A', 'Edificio B', 'Edificio C', 'Anexo', 'Laboratorios'];
         $salon = $this->salonModel->getById($id);
         if (!$salon) {
             header('Location: ' . BASE_URL . 'salones');
@@ -103,38 +115,58 @@ class SalonesController extends Controller
                 'tipo'        => $_POST['tipo']             ?? 'Aula',
                 'capacidad'   => (int) ($_POST['capacidad'] ?? 0),
                 'estado'      => $_POST['estado']           ?? 'Activo',
-                'descripcion' => trim($_POST['descripcion'] ?? ''),
+                'descripcion' => strip_tags(trim($_POST['descripcion'] ?? '')),
             ]);
 
             if ($datos['nombre'] === '') {
                 $errors[] = 'El nombre del salón es obligatorio.';
+            } elseif (!preg_match('/^[A-Za-z0-9\-\s]+$/', $datos['nombre'])) {
+                $errors[] = 'El nombre solo debe aceptar letras, números, espacios y "-".';
+            }
+
+            if ($datos['edificio'] === '' || !in_array($datos['edificio'], $edificios_validos)) {
+                $errors[] = 'Debe seleccionar un edificio válido.';
+            }
+
+            if ($datos['capacidad'] <= 0) {
+                $errors[] = 'La capacidad debe ser mayor a 0.';
+            } elseif ($datos['capacidad'] > 40) {
+                $errors[] = 'La capacidad máxima de cada salón es de 40 alumnos.';
+            }
+
+            if (empty($errors)) {
+                $db = db_connect();
+                $st = $db->prepare("SELECT id_salon FROM salones WHERE nombre = ? AND id_salon != ?");
+                $st->execute([$datos['nombre'], $id]);
+                if ($st->fetch()) {
+                    $errors[] = 'Ya existe un salón con ese nombre.';
+                }
             }
 
             if (empty($errors)) {
                 $this->salonModel->update($id, $datos);
-                header('Location: ' . BASE_URL . 'salones');
-                exit;
+                redirect(BASE_URL . 'salones', 'Se guardaron correctamente los cambios');
             }
         }
 
         $this->view('salones/edit', [
             'errors' => $errors,
             'datos'  => $datos,
+            'edificios_validos' => $edificios_validos,
         ]);
     }
 
-        public function delete($id)
+    /**
+     * @param int|string $id
+     */
+    public function delete($id)
     {
         try {
             $this->salonModel->delete($id);
-            redirect(BASE_URL . 'salones', 'Registro eliminado correctamente');
+            redirect(BASE_URL . 'salones', 'Salón eliminado correctamente');
         } catch (PDOException $e) {
             if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
-                $tabla = 'otro módulo';
-                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
-                    $tabla = $m[1];
-                }
-                redirect(BASE_URL . 'salones', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+                redirect(BASE_URL . 'salones', delete_error_msg($e), 'danger');
             }
             throw $e;
         }

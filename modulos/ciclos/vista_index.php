@@ -1,4 +1,8 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $ciclos
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -13,9 +17,6 @@
         <p>Administración de los periodos académicos de la institución</p>
     </div>
     <div class="d-flex">
-        <a href="<?php echo BASE_URL; ?>ciclos/search_delete" class="btn btn-outline-danger mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">delete</span> Borrar Ciclo
-        </a>
         <a href="<?php echo BASE_URL; ?>ciclos/search_edit" class="btn btn-outline-primary mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
             <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">edit</span> Editar Ciclo
         </a>
@@ -50,9 +51,9 @@
                             </tr>
                         <?php endif; ?>
                         <?php foreach ($ciclos as $c): ?>
-                            <tr <?php echo $c['estado'] === 'Activo' ? 'style="background:#f0f9ff;"' : ''; ?>>
+                            <tr class="<?php echo $c['estado'] === 'Activo' ? 'cycle-active-row' : ''; ?>">
                                 <td class="pl-4 align-middle">
-                                    <span class="font-weight-bold text-dark"><?php echo e($c['nombre']); ?></span>
+                                    <span class="cycle-nombre font-weight-bold"><?php echo e($c['nombre']); ?></span>
                                     <?php if ($c['estado'] === 'Activo'): ?>
                                         <span class="ml-2 badge badge-pill badge-primary" style="font-size:9px;">ACTUAL</span>
                                     <?php endif; ?>
@@ -68,13 +69,7 @@
                                     </div>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <?php
-                                    $colores = ['Activo' => '#dcfce7', 'Cerrado' => '#f1f5f9', 'Proximo' => '#e0f2fe'];
-                                    $tcolores = ['Activo' => '#166534', 'Cerrado' => '#475569', 'Proximo' => '#0369a1'];
-                                    $color = $colores[$c['estado']] ?? '#f1f5f9';
-                                    $tcolor = $tcolores[$c['estado']] ?? '#475569';
-                                    ?>
-                                    <span class="badge" style="background:<?php echo $color; ?>; color:<?php echo $tcolor; ?>; border-radius:20px; padding:6px 12px; font-size:10px; font-weight:700;">
+                                    <span class="badge badge-status badge-status-<?php echo strtolower($c['estado']); ?>">
                                         <?php echo strtoupper($c['estado']); ?>
                                     </span>
                                 </td>

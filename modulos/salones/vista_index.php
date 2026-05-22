@@ -1,4 +1,11 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $filtros
+ * @var array $salones
+ */
+$filtros = $filtros ?? ['q' => ''];
+$salones = $salones ?? [];
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -13,12 +20,6 @@
         <p>Inventario de espacios físicos</p>
     </div>
     <div class="d-flex">
-        <a href="<?php echo BASE_URL; ?>salones/search_delete" class="btn btn-outline-danger mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">delete</span> Borrar Salón
-        </a>
-        <a href="<?php echo BASE_URL; ?>salones/search_edit" class="btn btn-outline-primary mr-2" style="border-radius:8px; padding: 10px 20px; font-weight:600;">
-            <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">edit</span> Editar Salón
-        </a>
         <a href="<?php echo BASE_URL; ?>salones/create" class="btn btn-primary" style="background:#197fe6; border:none; border-radius:8px; padding: 10px 20px; font-weight:600;">
             <span class="material-symbols-outlined mr-1" style="font-size:20px; vertical-align:middle;">add_circle</span> Nuevo Salón
         </a>
@@ -61,7 +62,9 @@
                     <tr class="text-uppercase" style="font-size:11px; letter-spacing:1px; background:#f8fafc;">
                         <th class="pl-4">ID</th>
                         <th>Nombre del Salón</th>
+                        <th>Edificio</th>
                         <th>Capacidad</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,9 +82,27 @@
                                 #<?php echo e($s['id_salon']); ?>
                             </td>
                             <td class="align-middle">
-                                <span class="font-weight-bold" style="color:#1e293b;"><?php echo e($s['nombre']); ?></span>
+                                <span class="salon-nombre font-weight-bold"><?php echo e($s['nombre']); ?></span>
+                            </td>
+                            <td class="align-middle">
+                                <?php if (!empty($s['edificio'])): ?>
+                                    <span class="badge badge-edificio">
+                                        <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">location_on</span>
+                                        <?php echo e($s['edificio']); ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                             </td>
                             <td class="align-middle"><span class="font-weight-600"><?php echo e($s['capacidad']); ?></span> <small class="text-muted">personas</small></td>
+                            <td class="align-middle text-center">
+                                <a href="<?php echo BASE_URL; ?>salones/edit/<?php echo $s['id_salon']; ?>" class="btn btn-sm btn-outline-secondary mr-1" style="border-radius:6px;" title="Editar">
+                                    <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">edit</span>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteSalon(<?php echo $s['id_salon']; ?>, '<?php echo e($s['nombre']); ?>')" style="border-radius:6px;" title="Eliminar">
+                                    <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">delete</span>
+                                </button>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -91,5 +112,24 @@
 </div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmDeleteSalon(id, nombre) {
+    Swal.fire({
+        title: '¿Eliminar salón?',
+        html: 'Se eliminará <strong>' + nombre + '</strong> permanentemente.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?php echo BASE_URL; ?>salones/delete/' + id;
+        }
+    })
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>

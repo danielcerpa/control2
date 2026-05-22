@@ -1,5 +1,5 @@
 <?php
-// modulos/alumno/conexion.php — Modelo AlumnoPortal
+// modulos/portal_alumno/conexion.php — Modelo AlumnoPortal
 
 class AlumnoPortal
 {
@@ -116,35 +116,45 @@ class AlumnoPortal
     }
 
     /**
-     * Retorna las calificaciones del alumno en el ciclo activo.
+     * Retorna las calificaciones del alumno por materia con P1, P2, P3 y FINAL.
      */
     public function getCalificaciones($alumno_id, $ciclo_id)
     {
         $st = $this->db->prepare(
             "SELECT m.nombre AS materia, i.id_inscripcion,
-                    c.puntaje, c.etiqueta_periodo, c.fecha_registro
+                     MAX(CASE WHEN c.etiqueta_periodo = 'P1'    THEN c.puntaje END) AS p1,
+                     MAX(CASE WHEN c.etiqueta_periodo = 'P2'    THEN c.puntaje END) AS p2,
+                     MAX(CASE WHEN c.etiqueta_periodo = 'P3'    THEN c.puntaje END) AS p3,
+                     MAX(CASE WHEN c.etiqueta_periodo = 'FINAL' THEN c.puntaje END) AS final
                FROM inscripciones i
                JOIN materias m ON m.id_materia = i.id_materia
                LEFT JOIN calificaciones c ON c.id_inscripcion = i.id_inscripcion
               WHERE i.id_alumno = ?
-              ORDER BY c.fecha_registro DESC, m.nombre"
+              GROUP BY m.nombre, i.id_inscripcion
+              ORDER BY m.nombre"
         );
         $st->execute([$alumno_id]);
         return $st->fetchAll();
     }
 
     /**
-     * Retorna las últimas N calificaciones (para el perfil).
+     * Retorna las últimas N calificaciones FINALES (para el perfil).
      */
     public function getUltimasCalificaciones($alumno_id, $limite = 5)
     {
         $st = $this->db->prepare(
-            "SELECT m.nombre AS materia, c.puntaje, c.etiqueta_periodo, c.fecha_registro
+            "SELECT m.nombre AS materia,
+                     MAX(CASE WHEN c.etiqueta_periodo = 'P1'    THEN c.puntaje END) AS p1,
+                     MAX(CASE WHEN c.etiqueta_periodo = 'P2'    THEN c.puntaje END) AS p2,
+                     MAX(CASE WHEN c.etiqueta_periodo = 'P3'    THEN c.puntaje END) AS p3,
+                     MAX(CASE WHEN c.etiqueta_periodo = 'FINAL' THEN c.puntaje END) AS final,
+                     MAX(c.fecha_registro) AS ultima_fecha
                FROM inscripciones i
                JOIN materias m ON m.id_materia = i.id_materia
-               JOIN calificaciones c ON c.id_inscripcion = i.id_inscripcion
+               LEFT JOIN calificaciones c ON c.id_inscripcion = i.id_inscripcion
               WHERE i.id_alumno = ?
-              ORDER BY c.fecha_registro DESC
+              GROUP BY m.nombre, i.id_inscripcion
+              ORDER BY ultima_fecha DESC
               LIMIT " . intval($limite)
         );
         $st->execute([$alumno_id]);
@@ -165,7 +175,7 @@ class AlumnoPortal
                     (SELECT c.puntaje
                        FROM calificaciones c
                       WHERE c.id_inscripcion = i.id_inscripcion
-                      ORDER BY c.fecha_registro DESC
+                        AND c.etiqueta_periodo = 'FINAL'
                       LIMIT 1) AS calificacion
                FROM inscripciones i
                JOIN materias m ON m.id_materia = i.id_materia

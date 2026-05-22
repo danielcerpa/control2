@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/bootstrap-icons.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/app.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/app.css?v=<?php echo filemtime(dirname(__FILE__) . '/../../assets/css/app.css'); ?>">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/login.css">
 </head>
 
@@ -32,7 +32,7 @@
                 <?php if (isset($error) && $error): ?>
                     <div class="alert alert-modern fade-in delay-1" role="alert">
                         <span class="material-symbols-outlined" style="font-size: 20px;">error</span>
-                        <span class="small font-weight-medium"><?php echo e($error); ?></span>
+                        <span class="small font-weight-medium"><?php echo $error; ?></span>
                     </div>
                 <?php endif; ?>
 

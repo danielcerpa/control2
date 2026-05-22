@@ -1,4 +1,10 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $datos
+ * @var array|null $errors
+ * @var int $total_docentes
+ */
+include 'includes/header.php'; ?>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -42,12 +48,13 @@
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">N° Empleado <span class="text-danger">*</span></label>
                             <input type="text" name="num_empleado" class="form-control"
-                                value="<?php echo e($datos['numero_empleado']); ?>" maxlength="20" required style="border-radius:8px;">
+                                value="<?php echo e($datos['numero_empleado']); ?>" maxlength="20" required oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="border-radius:8px;">
+                            <small class="text-muted">Actualmente hay <strong><?php echo $total_docentes ?? 0; ?></strong> docente(s) registrado(s)</small>
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">CURP <span class="text-danger">*</span></label>
                             <input type="text" name="curp" class="form-control" style="text-transform:uppercase; border-radius:8px;"
-                                value="<?php echo e($datos['curp']); ?>" maxlength="18" required>
+                                value="<?php echo e($datos['curp']); ?>" maxlength="18" required pattern="^[A-Za-z]{4}\d{6}[HMhm][A-Za-z]{5}[A-Za-z0-9]\d$" title="CURP de 18 caracteres (ej. ROPE950812HDFRNR08)" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Estado</label>
@@ -78,19 +85,24 @@
 
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label class="small font-weight-bold">Email</label>
-                            <input type="email" name="email" class="form-control"
-                                value="<?php echo e($datos['email']); ?>" maxlength="120" style="border-radius:8px;">
+                            <label class="small font-weight-bold">Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" id="email" class="form-control"
+                                value="<?php echo e($datos['email']); ?>" maxlength="120" required style="border-radius:8px;">
+                            <small class="text-muted">Autogenerado sugerido</small>
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="small font-weight-bold">Teléfono</label>
+                            <label class="small font-weight-bold">Teléfono <span class="text-danger">*</span></label>
                             <input type="tel" name="telefono" class="form-control"
-                                value="<?php echo e($datos['telefono']); ?>" maxlength="10" pattern="[0-9]{1,10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" style="border-radius:8px;">
+                                value="<?php echo e($datos['telefono']); ?>" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Debe contener exactamente 10 dígitos" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label class="small font-weight-bold">Grado de Estudios</label>
-                            <input type="text" name="grado_estudio" class="form-control"
-                                value="<?php echo e($datos['grado_estudio']); ?>" maxlength="80" style="border-radius:8px;">
+                            <label class="small font-weight-bold">Grado de Estudios <span class="text-danger">*</span></label>
+                            <select name="grado_estudio" class="form-control" required style="border-radius:8px;">
+                                <option value="">Seleccionar...</option>
+                                <?php foreach (array('Licenciatura', 'Especialidad', 'Maestría', 'Doctorado', 'Posgrado') as $opt): ?>
+                                    <option value="<?php echo $opt; ?>" <?php if ($datos['grado_estudio'] === $opt) echo 'selected'; ?>><?php echo $opt; ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
 
@@ -109,16 +121,17 @@
                     <div class="row">
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Usuario</label>
-                            <input type="text" name="login_id" class="form-control"
+                            <input type="text" name="login_id" id="login_id" class="form-control"
                                 value="<?php echo e($datos['login_id']); ?>" maxlength="30" style="border-radius:8px;">
+                            <small class="text-muted">Autogenerado sugerido</small>
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Nueva Contraseña</label>
-                            <input type="password" name="password" class="form-control" maxlength="100" placeholder="Sin cambios" style="border-radius:8px;">
+                            <input type="password" name="password" class="form-control" maxlength="100" placeholder="<?php echo empty($datos['id_usuario']) ? 'Requerido para crear cuenta' : 'Sin cambios'; ?>" style="border-radius:8px;">
                         </div>
                         <div class="col-md-4 form-group">
                             <label class="small font-weight-bold">Confirmar Nueva Contraseña</label>
-                            <input type="password" name="password2" class="form-control" maxlength="100" placeholder="Sin cambios" style="border-radius:8px;">
+                            <input type="password" name="password2" class="form-control" maxlength="100" placeholder="<?php echo empty($datos['id_usuario']) ? 'Requerido para crear cuenta' : 'Sin cambios'; ?>" style="border-radius:8px;">
                         </div>
                     </div>
                 </div>
@@ -141,7 +154,7 @@
                     <small class="text-muted d-block mb-3">Clic para cambiar foto</small>
                     <input type="file" id="foto_file" accept="image/*" class="d-none">
                     <input type="hidden" name="foto_base64" id="foto_base64" value="">
-                    <button type="button" id="btn-quitar-foto" class="btn btn-sm btn-outline-danger <?php echo $datos['ruta_foto'] ? '' : 'd-none'; ?>" style="border-radius:20px;">Quitar foto</button>
+                    <button type="button" id="btn-quitar-foto" class="btn btn-sm btn-outline-danger" style="border-radius:20px; display: <?php echo $datos['ruta_foto'] ? 'inline-flex' : 'none'; ?> !important;">Quitar foto</button>
                 </div>
             </div>
         </div>
@@ -165,6 +178,56 @@
         const base64Input = document.getElementById('foto_base64');
         const btnQuitar = document.getElementById('btn-quitar-foto');
 
+        // Autogeneración de Email y Usuario
+        const nombreInput = document.querySelector('input[name="nombre"]');
+        const apellidoPInput = document.querySelector('input[name="apellido_p"]');
+        const apellidoMInput = document.querySelector('input[name="apellido_m"]');
+        const emailInput = document.getElementById('email');
+        const loginIdInput = document.getElementById('login_id');
+
+        let isManualOverride = false;
+
+        function updateCredentials() {
+            if (isManualOverride) return;
+
+            let nombre = nombreInput.value.trim().split(' ')[0]; // Solo el primer nombre
+            let apP = apellidoPInput.value.trim().charAt(0);
+            let apM = apellidoMInput.value.trim().charAt(0);
+
+            // Quitar acentos
+            nombre = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            apP = apP.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            apM = apM.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            if(nombre) nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
+            if(apP) apP = apP.toUpperCase();
+            if(apM) apM = apM.toUpperCase();
+
+            let baseName = nombre + apP + apM;
+            
+            if (baseName.length > 0) {
+                baseName = baseName.replace(/[^a-zA-Z0-9]/g, '');
+                emailInput.value = baseName + '@gmail.com';
+                loginIdInput.value = baseName;
+            } else {
+                emailInput.value = '';
+                loginIdInput.value = '';
+            }
+        }
+
+        nombreInput.addEventListener('input', updateCredentials);
+        apellidoPInput.addEventListener('input', updateCredentials);
+        apellidoMInput.addEventListener('input', updateCredentials);
+
+        // Bloquear autocompletado si el usuario ya escribió a mano
+        emailInput.addEventListener('keydown', () => isManualOverride = true);
+        loginIdInput.addEventListener('keydown', () => isManualOverride = true);
+
+        // Si ya tienen correo guardado desde la base de datos, bloqueamos de inicio para no borrárselos por accidente al editar su nombre
+        if (emailInput.value.trim() !== '') {
+            isManualOverride = true;
+        }
+
         wrap.addEventListener('click', () => fileInput.click());
 
         fileInput.addEventListener('change', function() {
@@ -179,7 +242,7 @@
                 reader.onload = function(e) {
                     wrap.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
                     base64Input.value = e.target.result;
-                    btnQuitar.classList.remove('d-none');
+                    btnQuitar.style.setProperty('display', 'inline-flex', 'important');
                 }
                 reader.readAsDataURL(file);
             }
@@ -189,7 +252,7 @@
             wrap.innerHTML = '<span class="material-symbols-outlined text-muted" style="font-size:48px;">add_a_photo</span>';
             base64Input.value = '';
             fileInput.value = '';
-            this.classList.add('d-none');
+            this.style.setProperty('display', 'none', 'important');
         });
     });
 </script>

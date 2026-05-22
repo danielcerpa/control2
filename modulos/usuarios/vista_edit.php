@@ -29,14 +29,23 @@
                         <input type="text" name="nombre_usuario" class="form-control" value="<?php echo e($usuario['nombre_usuario']); ?>" required style="border-radius:8px;">
                     </div>
                     <div class="row">
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-4 form-group">
                             <label class="small font-weight-bold text-secondary">Nueva Contraseña <small class="text-muted">(Opcional)</small></label>
                             <input type="password" name="contrasena" class="form-control" placeholder="Dejar en blanco para no cambiar" style="border-radius:8px;">
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-4 form-group">
+                            <label class="small font-weight-bold text-secondary">Confirmar Contraseña</label>
+                            <input type="password" name="contrasena2" class="form-control" placeholder="Repetir nueva contraseña" style="border-radius:8px;">
+                        </div>
+                        <div class="col-md-4 form-group">
                             <div class="custom-control custom-switch mt-4">
-                                <input type="checkbox" name="estado" class="custom-control-input" id="estado" <?php echo $usuario['estado'] ? 'checked' : ''; ?>>
-                                <label class="custom-control-label font-weight-bold text-secondary" style="cursor:pointer;" for="estado">Usuario Activo</label>
+                                <input type="checkbox" name="estado" class="custom-control-input" id="estado" <?php echo $usuario['estado'] ? 'checked' : ''; ?> <?php echo ($usuario['id_usuario'] == $_SESSION['usuario_id']) ? 'disabled' : ''; ?>>
+                                <label class="custom-control-label font-weight-bold" style="cursor:pointer; color: <?php echo $usuario['estado'] ? '#10b981' : '#ef4444'; ?>;" for="estado" id="estado_label">
+                                    <?php echo $usuario['estado'] ? 'Usuario Activo' : 'Usuario Inactivo'; ?>
+                                </label>
+                                <?php if ($usuario['id_usuario'] == $_SESSION['usuario_id']): ?>
+                                    <small class="text-muted d-block mt-1">(No puedes desactivar tu propia cuenta)</small>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -56,3 +65,15 @@
 </form>
 
 <?php include 'includes/footer.php'; ?>
+
+<script>
+$(document).ready(function() {
+    $('#estado').change(function() {
+        if ($(this).is(':checked')) {
+            $('#estado_label').text('Usuario Activo').css('color', '#10b981');
+        } else {
+            $('#estado_label').text('Usuario Inactivo').css('color', '#ef4444');
+        }
+    });
+});
+</script>

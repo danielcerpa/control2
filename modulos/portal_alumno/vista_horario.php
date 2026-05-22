@@ -1,4 +1,10 @@
-<?php include 'includes/header.php'; ?>
+<?php
+/**
+ * @var array $grid
+ * @var array|null $ciclo
+ * @var int|null $grupo_id
+ */
+include 'includes/header.php'; ?>
 
 <?php
 /* ─── Construir el grid de horario (PHP-side, igual que el renderHorario() del modal) ─── */
@@ -86,15 +92,15 @@ foreach ($horarios_plano as $f) {
 </div>
 
 <?php if (!$grupo_id): ?>
-    <div class="card border-0 shadow-sm text-center py-5" style="border-radius:12px; background:#fffbeb;">
+    <div class="card border-0 shadow-sm text-center py-5 no-grupo-card">
         <span class="material-symbols-outlined text-warning mb-3" style="font-size:64px;">warning</span>
-        <h5 class="text-dark font-weight-bold">Aún no tienes grupo asignado</h5>
+        <h5 class="font-weight-bold">Aún no tienes grupo asignado</h5>
         <p class="text-secondary">Contacta con servicios escolares para regularizar tu inscripción al ciclo actual.</p>
     </div>
 <?php elseif (empty($horarios_plano)): ?>
     <div class="card border-0 shadow-sm text-center py-5" style="border-radius:12px;">
         <span class="material-symbols-outlined text-muted mb-3" style="font-size:64px; opacity:.3;">event_busy</span>
-        <h5 class="text-dark font-weight-bold">Sin clases registradas</h5>
+        <h5 class="font-weight-bold">Sin clases registradas</h5>
         <p class="text-secondary">No hay materias con horario asignado para este ciclo.</p>
     </div>
 <?php else: ?>
@@ -133,7 +139,7 @@ foreach ($horarios_plano as $f) {
                                 <td class="td-vacia"></td>
                             <?php else: ?>
                                 <td class="td-materia" rowspan="<?php echo $celda['rowspan']; ?>">
-                                    <div class="materia-chip" style="background:<?php echo $celda['color']; ?>;">
+                                    <div class="materia-chip" style="--materia-color: <?php echo $celda['color']; ?>;">
                                         <span class="mat-nombre"><?php echo e($celda['materia']); ?></span>
                                         <?php if (!empty($celda['salon'])): ?>
                                             <span class="mat-salon">
@@ -159,137 +165,5 @@ foreach ($horarios_plano as $f) {
 </div>
 
 <?php endif; ?>
-
-<style>
-/* ─── Contenedor principal ─── */
-.horario-full-wrap {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,.08);
-    overflow: hidden;
-    border: 1px solid #e2e8f0;
-}
-
-/* ─── Tabla ─── */
-.horario-full-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 13px;
-}
-
-/* ─── Cabecera ─── */
-.horario-full-table thead th {
-    background: #f8fafc;
-    color: #475569;
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 14px 12px;
-    border-bottom: 2px solid #e2e8f0;
-    text-align: center;
-}
-.horario-full-table thead th.col-hora {
-    text-align: left;
-    width: 110px;
-    min-width: 95px;
-    color: #94a3b8;
-}
-
-/* ─── Celdas tbody ─── */
-.horario-full-table tbody td {
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-    padding: 0;
-}
-
-/* Celda de hora */
-.horario-full-table tbody td.td-hora {
-    padding: 8px 14px;
-    color: #64748b;
-    font-weight: 700;
-    font-size: 11.5px;
-    white-space: nowrap;
-    background: #f8fafc;
-    border-right: 2px solid #e2e8f0;
-    text-align: left;
-}
-
-/* Celda vacía */
-.horario-full-table tbody td.td-vacia {
-    background: #fff;
-    min-height: 52px;
-    height: 52px;
-    transition: background .15s;
-}
-.horario-full-table tbody td.td-vacia:hover {
-    background: #f8fafc;
-}
-
-/* Celda con materia */
-.horario-full-table tbody td.td-materia {
-    padding: 6px 8px;
-    vertical-align: middle;
-    text-align: center;
-}
-
-/* Chip de materia */
-.materia-chip {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    border-radius: 10px;
-    padding: 8px 10px;
-    color: #fff;
-    font-weight: 600;
-    font-size: 12px;
-    line-height: 1.3;
-    min-height: 48px;
-    transition: transform .15s, box-shadow .15s;
-    cursor: default;
-}
-.materia-chip:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 14px rgba(0,0,0,.18);
-}
-.mat-nombre {
-    font-size: 12.5px;
-    font-weight: 700;
-}
-.mat-salon, .mat-docente {
-    font-size: 10px;
-    opacity: .88;
-    font-weight: 400;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-/* ─── Print ─── */
-@media print {
-    .breadcrumb,
-    .page-header button,
-    .main-sidebar,
-    .main-header,
-    .navbar { display: none !important; }
-
-    .content-wrapper { margin: 0 !important; padding: 0 !important; }
-
-    .horario-full-wrap {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-        border-radius: 0 !important;
-    }
-}
-
-/* ─── Responsive: apilar en móvil ─── */
-@media (max-width: 600px) {
-    .horario-full-table thead th.col-hora { display: none; }
-    .horario-full-table tbody td.td-hora  { display: none; }
-}
-</style>
 
 <?php include 'includes/footer.php'; ?>

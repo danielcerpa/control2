@@ -43,11 +43,15 @@ class Reporte
 
     public function getCalificacionesBoleta($id_alumno, $ciclo_escolar = null)
     {
-        $query = "SELECT m.nombre AS materia, c.puntaje, c.fecha_registro, c.etiqueta_periodo
-               FROM calificaciones c
-               JOIN inscripciones i ON c.id_inscripcion = i.id_inscripcion
-               JOIN materias m ON i.id_materia = m.id_materia
-              WHERE i.id_alumno = ? AND c.estado = 'ACTIVO'";
+        $query = "SELECT m.nombre AS materia,
+                         MAX(CASE WHEN c.etiqueta_periodo = 'P1'    THEN c.puntaje END) AS p1,
+                         MAX(CASE WHEN c.etiqueta_periodo = 'P2'    THEN c.puntaje END) AS p2,
+                         MAX(CASE WHEN c.etiqueta_periodo = 'P3'    THEN c.puntaje END) AS p3,
+                         MAX(CASE WHEN c.etiqueta_periodo = 'FINAL' THEN c.puntaje END) AS final
+                  FROM inscripciones i
+                  JOIN materias m ON i.id_materia = m.id_materia
+                  LEFT JOIN calificaciones c ON c.id_inscripcion = i.id_inscripcion
+                  WHERE i.id_alumno = ? AND (c.estado = 'ACTIVO' OR c.estado IS NULL)";
 
         $params = [$id_alumno];
         if ($ciclo_escolar) {
@@ -55,7 +59,7 @@ class Reporte
             $params[] = $ciclo_escolar;
         }
 
-        $query .= " ORDER BY m.ciclo_escolar DESC, m.nombre";
+        $query .= " GROUP BY m.nombre, i.id_inscripcion ORDER BY m.nombre";
 
         $st = $this->db->prepare($query);
         $st->execute($params);

@@ -37,7 +37,7 @@
                 <div class="card-body">
                     <div class="form-group mb-4">
                         <label class="small font-weight-bold">Nombre descriptivo <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="form-control" value="<?php echo e($datos['nombre']); ?>" maxlength="50" placeholder="Ej: Ciclo Escolar 2025-2026" required style="border-radius:8px;">
+                        <input type="text" name="nombre" class="form-control" value="<?php echo e($datos['nombre']); ?>" maxlength="50" placeholder="Ej: Ciclo Escolar 2025-2026" required pattern="[a-zA-Z0-9\-\(\)\s]+" title="Solo letras, números, guiones, paréntesis y espacios" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\(\)\s]/g, '');" style="border-radius:8px;">
                     </div>
                     
                     <div class="row mb-3">

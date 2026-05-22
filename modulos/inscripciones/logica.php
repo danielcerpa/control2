@@ -3,13 +3,16 @@
 
 class InscripcionesController extends Controller
 {
+    /** @var Inscripcion */
     private $inscripcionModel;
+    /** @var Alumno */
     private $alumnoModel;
+    /** @var Horario */
     private $horarioModel; // Para oferta_horario
 
     public function __construct()
     {
-        require_auth();
+        require_perm('inscripciones');
         $this->inscripcionModel = new Inscripcion();
         $this->alumnoModel = new Alumno();
         $this->horarioModel = new Horario();
@@ -29,8 +32,80 @@ class InscripcionesController extends Controller
                 'id_materia'=> $_POST['id_materia'] ?? $_POST['id_oferta'],
                 'estado'    => isset($_POST['estado']) ? 1 : 0
             ];
-            $this->inscripcionModel->create($datos);
-            header('Location: ' . BASE_URL . 'inscripciones');
+            $errors = [];
+
+            $alumno = $this->alumnoModel->getById($datos['id_alumno']);
+            if (!$alumno || (int)$alumno['estado'] !== 1) {
+                $errors[] = 'El alumno debe estar Activo para ser inscrito.';
+            }
+
+            $db = db_connect();
+            $st = $db->prepare("SELECT id_inscripcion FROM inscripciones WHERE id_alumno = ? AND id_materia = ?");
+            $st->execute([$datos['id_alumno'], $datos['id_materia']]);
+            if ($st->fetch()) {
+                $errors[] = 'El alumno ya está inscrito en esta materia.';
+            }
+
+            if (empty($errors)) {
+                require_once 'modulos/materias/conexion.php';
+                $materiaModel = new Materia();
+                $materia = $materiaModel->getById($datos['id_materia']);
+
+                if ($materia) {
+                    $stCount = $db->prepare("SELECT COUNT(*) FROM inscripciones WHERE id_materia = ? AND estado = 1");
+                    $stCount->execute([$datos['id_materia']]);
+                    $inscritos = $stCount->fetchColumn();
+
+                    if ($inscritos >= $materia['horas']) {
+                        $errors[] = 'La materia ha alcanzado su cupo máximo (' . $materia['horas'] . ').';
+                    }
+
+                    if ($materia['salon_id']) {
+                        require_once 'modulos/salones/conexion.php';
+                        $salonModel = new Salon();
+                        $salon = $salonModel->getById($materia['salon_id']);
+                        if ($salon && $inscritos >= $salon['capacidad']) {
+                            $errors[] = 'La inscripción supera la capacidad del salón asignado (' . $salon['capacidad'] . ').';
+                        }
+                    }
+
+                    $horariosNuevos = $materia['horarios'];
+                    $stInscritas = $db->prepare("
+                        SELECT m.id_materia
+                        FROM inscripciones i
+                        JOIN materias m ON i.id_materia = m.id_materia
+                        WHERE i.id_alumno = ? AND i.estado = 1
+                    ");
+                    $stInscritas->execute([$datos['id_alumno']]);
+                    $materiasInscritas = $stInscritas->fetchAll(PDO::FETCH_ASSOC);
+
+                    foreach ($materiasInscritas as $mi) {
+                        $horariosExistentes = $materiaModel->getHorarios($mi['id_materia']);
+                        foreach ($horariosNuevos as $hn) {
+                            foreach ($horariosExistentes as $he) {
+                                if ($hn['dia'] === $he['dia']) {
+                                    $inicioN = strtotime($hn['hora_inicio']);
+                                    $finN    = strtotime($hn['hora_fin']);
+                                    $inicioE = strtotime($he['hora_inicio']);
+                                    $finE    = strtotime($he['hora_fin']);
+                                    
+                                    if ($inicioN < $finE && $finN > $inicioE) {
+                                        $errors[] = 'Cruce de horarios detectado el día ' . $hn['dia'] . ' con otra materia.';
+                                        break 3;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (empty($errors)) {
+                $this->inscripcionModel->create($datos);
+                redirect(BASE_URL . 'inscripciones', 'Inscripción realizada exitosamente.', 'success');
+            } else {
+                redirect(BASE_URL . 'inscripciones/create', implode(' ', $errors), 'danger');
+            }
             exit;
         }
 
@@ -44,18 +119,17 @@ class InscripcionesController extends Controller
         ]);
     }
 
-        public function delete($id)
+    /**
+     * @param int|string $id
+     */
+    public function delete($id)
     {
         try {
             $this->inscripcionModel->delete($id);
-            redirect(BASE_URL . 'inscripciones', 'Registro eliminado correctamente');
+            redirect(BASE_URL . 'inscripciones', 'Inscripción eliminada correctamente');
         } catch (PDOException $e) {
             if ($e->getCode() == 23000 && strpos($e->getMessage(), '1451') !== false) {
-                $tabla = 'otro módulo';
-                if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
-                    $tabla = $m[1];
-                }
-                redirect(BASE_URL . 'inscripciones', "No se puede eliminar porque está en uso o tiene registros asociados en: $tabla", 'danger');
+                redirect(BASE_URL . 'inscripciones', delete_error_msg($e), 'danger');
             }
             throw $e;
         }

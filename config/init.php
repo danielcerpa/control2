@@ -29,6 +29,31 @@ function redirect($url, $msg = '', $tipo = 'success')
     exit;
 }
 
+// Genera mensaje amigable cuando un registro no se puede eliminar por FK
+function delete_error_msg(PDOException $e)
+{
+    $tabla_map = [
+        'materias'      => 'Materias',
+        'materia_horarios' => 'Horarios de Materia',
+        'inscripciones' => 'Inscripciones de Alumnos',
+        'calificaciones'=> 'Calificaciones',
+        'alumno_grupo'  => 'Asignaciones de Grupo',
+        'horarios'      => 'Horarios',
+        'grupos'        => 'Grupos',
+        'alumnos'       => 'Alumnos',
+        'profesores'    => 'Docentes',
+        'salones'       => 'Salones',
+        'ciclos_escolares' => 'Ciclos Escolares',
+    ];
+
+    $tabla_legible = 'otro módulo';
+    if (preg_match('/a foreign key constraint fails \([^.]*\.`([^`]+)`/i', $e->getMessage(), $m)) {
+        $tabla_legible = $tabla_map[$m[1]] ?? ucfirst($m[1]);
+    }
+
+    return "No se puede eliminar este registro porque está siendo utilizado en: {$tabla_legible}. Elimine primero los registros relacionados.";
+}
+
 // Recoger mensaje flash y limpiarlo
 function get_flash()
 {
@@ -71,3 +96,26 @@ function ciclo_activo()
 
     return $ciclo;
 }
+
+// Obtiene el valor de una clave de configuración con caché estático
+function get_config($clave, $reset = false)
+{
+    static $cache = null;
+
+    if ($reset || $cache === null) {
+        $cache = [];
+        try {
+            $pdo = db_connect();
+            $st  = $pdo->query("SELECT clave, valor FROM configuracion");
+            while ($row = $st->fetch()) {
+                $cache[$row['clave']] = $row['valor'];
+            }
+        } catch (Exception $e) {
+            // Tabla aún no existe o error: devolver null silenciosamente
+        }
+    }
+
+    if ($clave === null) return $cache;
+    return $cache[$clave] ?? null;
+}
+

@@ -1,5 +1,5 @@
 <?php
-define('DB_HOST', 'localhost:3307');
+define('DB_HOST', 'localhost:3306');
 define('DB_NAME', 'control2');
 define('DB_USER', 'root');
 define('DB_PASS', 'C3cyt3g21');
